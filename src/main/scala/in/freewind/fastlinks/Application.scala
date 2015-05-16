@@ -15,51 +15,74 @@ object Application extends PageApplication {
 
   meta.attach(meta => meta.categories.headOption.map(_.projects.headOption).foreach(selectedProject := _))
 
-  def view() = div(
+  def view() = {
+    div(
+      pageHeader(),
+      searchPanel(),
+      div(
+        sidebar(),
+        projectProfile()
+      ).css("content-wrapper").cssState(editing, "editing")
+    )
+  }
+
+  private def sidebar() = div(
+    meta.map(_.categories.map { category =>
+      div(
+        div(category.name),
+        div(category.projects.map(project => projectNameStars(project))).css("project-list")
+      ).css("category")
+    }).map(div(_).css("category-list"))
+  ).css("sidebar")
+
+  def projectNameStars(project: Project) = div(
+    span(project.name).css("project-name"), projectStars(project)
+  ).css("project")
+    .cssState(selectedProject.is(Some(project)), "current-project")
+    .onClick(_ => selectedProject := Some(project))
+
+  private def projectStars(project: Project) = {
+    project.stars.map(stars =>
+      span((0 to stars).map(_ => i().css("icon-star"))).css("stars")
+    ).getOrElse(span())
+  }
+
+  private def projectProfile() = div(
+    selectedProject.map { pp => pp.map(project =>
+      div(
+        div(project.name).css("profile-header"),
+        div(project.stars.getOrElse[Int](-1)).css("project-stars"),
+        div(
+          project.linkGroups.map { linkGroup =>
+            div(
+              linkGroup.links.map { link =>
+                div(
+                  span(link.name.getOrElse[String]("")),
+                  span(link.url)
+                ).css("link")
+              }
+            )
+          }
+        ).css("content")
+      ).css("profile-content")
+    )
+    }
+  ).css("project-profile")
+
+  private def pageHeader() = header(
     div(
       div(button("Edit!!!"))
-    ).css("header"),
-    div(
-      div(
-        meta.map(_.categories.map { category =>
-          div(
-            div(category.name),
-            div(category.projects.map(project =>
-              div(
-                div(project.name)
-                  .css("project").cssState(selectedProject.is(Some(project)), "current-project")
-                  .onClick(_ => selectedProject := Some(project))
-              )
-            )).css("project-list")
-          ).css("category")
-        }).map(div(_).css("category-list"))
-      ).css("sidebar"),
-      div(
-        selectedProject.map { pp => pp.map(project =>
-          div(
-            div(project.name).css("profile-header"),
-            div(project.stars.getOrElse[Int](-1)).css("project-stars"),
-            div(
-              project.linkGroups.map { linkGroup =>
-                div(
-                  linkGroup.links.map { link =>
-                    div(
-                      span(link.name.getOrElse[String]("")),
-                      span(link.url)
-                    ).css("link")
-                  }
-                )
-              }
-            ).css("content")
-          ).css("profile-content")
-        )
-        }
-      ).css("project-profile")
-    ).css("content-wrapper").cssState(editing, "editing")
+    ).css("header")
   )
 
-  def ready() {
+  private def searchPanel() = div(
+    text().placeholder("Search").css("search"),
+    span(
+      i().css("icon-cancel-circled")
+    ).css("clear-search")
+  ).css("search-panel")
 
+  def ready() {
     NodeJs.readFile("/Users/twer/workspace/fast-links/data.json").map(upickle.read[Meta]).map { meta =>
       meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
     }.foreach(meta := _)

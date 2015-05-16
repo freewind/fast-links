@@ -30,6 +30,7 @@ includeFilter in(Compile, LessKeys.less) := "index.less" | "font.css"
 lazy val generate = taskKey[Unit]("generate")
 
 generate := {
+  (copyResources in Compile).value
   (LessKeys.less in Compile).value
   (fastOptJS in Compile).value
 }
