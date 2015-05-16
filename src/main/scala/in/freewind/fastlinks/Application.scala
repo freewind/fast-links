@@ -51,27 +51,33 @@ object Application extends PageApplication {
     ).getOrElse(span())
   }
 
-  private def projectProfile() = div(
-    selectedProject.map { pp => pp.map(project =>
+
+  private def projectProfile() = selectedProject.map {
+    projectOption => projectOption.map(project =>
       div(
-        div(project.name).css("profile-header"),
-        div(project.stars.getOrElse[Int](-1)).css("project-stars"),
         div(
-          project.linkGroups.map { linkGroup =>
-            div(
-              linkGroup.links.map { link =>
+          div(
+            span(project.name).css("project-name"),
+            span(
+              projectStars(project)
+            ).css("project-stars")
+          ).css("profile-header"),
+          div(project.description.getOrElse[String]("")).css("project-description"),
+          div(
+            project.linkGroups.map(group => div(
+              div(group.name).css("group-name"),
+              group.links.map(link =>
                 div(
-                  span(link.name.getOrElse[String]("")),
-                  span(link.url)
+                  span(link.name.getOrElse[String]("")).css("link-name"),
+                  a(link.url).url("link-url")
                 ).css("link")
-              }
-            )
-          }
-        ).css("content")
-      ).css("profile-content")
+              )
+            ).css("link-group"))
+          ).css("link-groups")
+        ).css("profile-content")
+      ).css("project-profile")
     )
-    }
-  ).css("project-profile")
+  }
 
   private def pageHeader() = div(
     span(button("Edit").css("edit")).css("config-panel")
