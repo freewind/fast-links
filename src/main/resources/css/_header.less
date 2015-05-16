@@ -1,0 +1,80 @@
+header {
+  background: url("../images/bg.png");
+  padding: @content-padding;
+  z-index: 10000;
+  height: @header-height - @content-padding * 2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-shadow: 1px 1px 2px @shadow-color;
+
+  .header {
+    max-height: 25px;
+    overflow-y: scroll;
+
+    .categories {
+      display: inline-block;
+      max-width: 550px;
+      overflow: hidden;
+
+      .editing-category {
+        margin-right: 22px;
+        position: relative;
+
+        .current-category {
+          background-color: @main-color;
+        }
+
+        .editable {
+          margin-right: 0;
+          line-height: 18px;
+          font-size: 12px;
+          padding: 2px 24px 3px 6px;
+          .button(@header-button-color, none, 1px solid @border-color, @main-color, white, 1px solid white);
+
+          &.current-category {
+            border: 1px solid @main-color;
+          }
+        }
+
+        .icon-cancel {
+          position: absolute;
+          right: 49px;
+          top: -3px;
+          line-height: 24px;
+          color: @header-button-bg-color;
+        }
+      }
+    }
+    .config-panel {
+      position: absolute;
+      right: 10px;
+      color: #c0c0c0;
+      .done {
+        background-color: cornflowerblue;
+        &:hover {
+          color: white;
+        }
+      }
+      .data-dir, button {
+        margin-right: 8px;
+        &.done, &.edit {
+          margin-right: 0;
+        }
+      }
+    }
+
+    button {
+      margin-right: 10px;
+      font-size: 11px;
+      line-height: 20px;
+      .button(white, @header-button-bg-color, 0, @main-color, white, 0);
+      &.current-category {
+        background-color: @main-color;
+        &:hover {
+          background-color: white;
+        }
+      }
+    }
+  }
+}

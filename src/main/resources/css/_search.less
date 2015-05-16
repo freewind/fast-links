@@ -1,0 +1,103 @@
+.search-panel {
+  margin-top: 10px;
+  position: relative;
+  .search {
+    padding: 0 @content-padding;
+    line-height: 2em;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+    &:hover {
+      border-radius: 2px;
+      border: 1px solid @main-color;
+    }
+  }
+  .clear-search {
+    position: absolute;
+    right: @content-padding;
+    cursor: pointer;
+    color: rgb(192, 192, 192);
+    line-height: 2em;
+  }
+}
+
+.search-results {
+  font-size: 13px;
+  line-height: 1.5em;
+  overflow: auto;
+  max-height: @window-height - 60;
+  background: white;
+  box-sizing: border-box;
+  border-right: 1px solid #dfdfdf;
+  border-left: 1px solid #dfdfdf;
+  border-bottom: 1px solid #dfdfdf;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  .category {
+    margin-bottom: 15px;
+    .category-name {
+      line-height: 2em;
+      text-align: center;
+      color: @main-color;
+      background: #f1f1f1;
+      font-weight: bold;
+    }
+    .category-links {
+      margin-left: @content-padding;
+      margin-right: @content-padding;
+      .show-description {
+        color: #999999;
+        cursor: pointer;
+        font-size: 8px;
+        margin-left: 3px;
+        &:hover {
+          background-color: #EEEEEE;
+        }
+      }
+      .project-description, .link-description {
+        color: #555555;
+        padding: 2px;
+        background-color: #F6F6F6;
+        margin: 2px 0 8px;
+      }
+      .link {
+        line-height: 2em;
+        .link-name {
+          margin-right: 5px;
+          color: #3360ba;
+        }
+        .link-url {
+          color: @link-color;
+          text-decoration: none;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        &:hover {
+          background-color: #EEEEEE;
+        }
+      }
+      .project-name {
+        line-height: 2em;
+        font-weight: bold;
+        border-bottom: 1px dotted #bbb;
+      }
+      .stars {
+        font-size: 8px;
+        color: @star-color;
+        padding-left: 5px;
+      }
+      .group-links {
+        .group-name {
+          color: #36BE5E;
+          line-height: 2em;
+        }
+      }
+    }
+  }
+}
+
+.highlight-char {
+  font-weight: bold;
+}
+

@@ -1,0 +1,49 @@
+@import (css) "font.css";
+
+@window-width: 100%;
+@window-height: 100%;
+@sidebar-width: 25%;
+@header-height: 85px;
+@content-padding: 10px;
+@link-left-space: 30px;
+@dialog-width: 30%;
+@dialog-height: 25%;
+
+@link-color: #666666;
+@main-color: #36BE5E;
+@header-button-bg-color: #c0c0c0;
+@header-button-color: #555;
+@star-color: #F2AF00;
+@a-color: #4eadf2;
+@a-hover-color: #0a89e4;
+@shadow-color: #bbb;
+@border-color: silver;
+
+.button(@color, @background, @border, @hover-color, @hover-background, @hover-border) {
+  color: @color;
+  background: @background;
+  border: @border;
+  border-radius: 2px;
+  cursor: pointer;
+  display: inline-block;
+  box-sizing: border-box;
+  &:hover {
+    color: @hover-color;
+    background: @hover-background;
+    border: @hover-border;
+  }
+}
+
+.form-input() {
+  border-radius: 4px;
+  border: 1px solid silver;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+@import "_base.less";
+@import "_header.less";
+@import "_search.less";
+@import "_sidebar.less";
+@import "_project.less";
+@import "_dialog.less";

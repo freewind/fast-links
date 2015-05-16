@@ -1,0 +1,37 @@
+.sidebar {
+  width: @sidebar-width;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  background: rgb(247, 247, 247);
+  color: #555;
+  .project-list {
+    padding-bottom: 60px;
+    .project {
+      cursor: pointer;
+      padding: 0 @content-padding;
+      line-height: 28px;
+      .project-name {
+        padding-right: 5px;
+      }
+      &:first-child {
+        margin-top: 2px;
+      }
+    }
+    .current-project {
+      background-color: #EEEEEE;
+      border-bottom: 2px solid @main-color;
+    }
+    .new-project {
+      padding: @content-padding;
+      width: 100%;
+      box-sizing: border-box;
+      input {
+        width: 100%;
+        .form-input();
+      }
+    }
+  }
+}

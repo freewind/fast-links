@@ -1,0 +1,208 @@
+.project-profile {
+  top: 0;
+  bottom: 0;
+  overflow-y: scroll;
+  position: absolute;
+  left: @sidebar-width;
+  width: @window-width - @sidebar-width;
+  .profile-content {
+    margin: 20px;
+    .profile-header {
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 20px;
+      .new-link-button {
+        margin-left: @link-left-space;
+      }
+      .new-link-group-button {
+        margin: 40px 0;
+      }
+      .project-name {
+        font-size: 28px;
+        font-weight: bold;
+        color: @main-color;
+        display: inline-block;
+        margin-bottom: 15px;
+        .editing {
+          display: inline-block;
+          width: 600px;
+        }
+      }
+      .project-stars {
+        line-height: 48px;
+        float: right;
+        display: inline-block;
+        .stars {
+          font-size: 11px;
+        }
+      }
+    }
+    .project-description {
+      width: 100%;
+    }
+    .project-group {
+      margin-top: 20px;
+      position: relative;
+      background: #f3f3f3;
+      border-radius: 6px;
+      padding: 10px 10px 20px;;
+      .move-up, .move-down, .remove-button {
+        position: absolute;
+        top: 10px;
+        color: #c0c0c0;
+        font-size: 16px;
+      }
+      .move-up {
+        right: 10px;
+        &:hover {
+          color: @main-color;
+        }
+      }
+      .move-down {
+        right: 30px;
+        &:hover {
+          color: @main-color;
+        }
+      }
+      .remove-button {
+        right: 50px;
+        color: #e44b23
+      }
+      .link {
+        .link-buttons {
+          position: relative;
+          display: none;
+          .move-up, .move-down, .remove-button {
+            top: -14px;
+            right: 0;
+            cursor: pointer;
+          }
+          .move-up {
+            left: 50px;
+          }
+          .move-down {
+            left: 30px;
+          }
+          .remove-button {
+            left: 10px;
+          }
+        }
+        &:hover .link-buttons {
+          display: inline-block;
+        }
+      }
+      .group-name {
+        color: #333333;
+        font-size: 20px;
+        font-weight: bold;
+        width: 600px;
+        margin-left: 15px;
+        margin-bottom: 10px;
+        display: inline-block;
+      }
+    }
+    .link {
+      margin-left: 30px;
+      margin-right: 30px;
+      .link-name {
+        color: #666666;
+        margin-right: 10px;
+      }
+      .link-url {
+        color: #3360ba;
+      }
+      .link-description {
+        color: #666666;
+        background-color: #F6F6F6;
+        padding: 5px;
+        margin-bottom: 5px;
+        font-size: 12px;
+      }
+      .link-show-description {
+        color: #999999;
+        cursor: pointer;
+        font-size: 10px;
+        margin-left: 10px;
+        text-align: center;
+        &:hover {
+          background-color: #EEEEEE;
+        }
+      }
+    }
+    .new-link-button, .new-link-group-button {
+      .button(#555, none, 1px solid #36BE5E, white, @main-color, 1px solid #36BE5E);
+      margin: 10px 0 0 15px;
+      line-height: 18px;
+      font-size: 12px;
+      padding: 2px 6px 3px 6px;
+      font-style: normal;
+    }
+    .new-link-group-button {
+      margin-left: 0;
+    }
+  }
+}
+.link, .new-link-form {
+  font-size: 13px;
+  .link-form {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    .link-name, .link-url, .link-description, .show-url-checkbox {
+      margin-bottom: 8px;
+      width: 100%;
+      line-height: 18px;
+    }
+    .link-name, .link-url, .link-description {
+      .form-input();
+    }
+    button {
+      margin-right: 10px;
+      font-size: 13px;
+      line-height: 22px;
+      width: 60px;
+      .button(white, @header-button-bg-color, 0, @main-color, white, 0);
+      &.ok-button {
+        background: @main-color;
+        &:hover {
+          background-color: white;
+        }
+      }
+    }
+    .link-description {
+      height: 60px;
+    }
+  }
+}
+
+.new-link-form {
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+.group-name, .project-description, .project-name {
+  &.editable {
+    .editing {
+      width: 100%;
+      input, textarea {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
+        background: white;
+        .form-input();
+      }
+      button {
+        margin-right: 10px;
+        font-size: 13px;
+        line-height: 22px;
+        width: 60px;
+        .button(white, @header-button-bg-color, 0, @main-color, white, 0);
+        &.update-button {
+          background: @main-color;
+          &:hover {
+            background-color: white;
+          }
+        }
+      }
+    }
+  }
+}

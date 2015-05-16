@@ -1,0 +1,61 @@
+html, body {
+  width: @window-width;
+  height: @window-height;
+  padding: 0;
+  margin: 0;
+  -webkit-user-select: text;
+}
+
+body {
+  position: relative;
+  font-size: 14px;
+  line-height: 150%;
+  overflow: scroll;
+  height: 100%;
+}
+
+.content-wrapper {
+  position: absolute;
+  top: @header-height;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+}
+
+a {
+  word-wrap: break-word;
+  color: @a-color;
+  &:hover {
+    color: @a-hover-color;
+  }
+}
+
+.stars {
+  font-size: 8px;
+  color: #F1B05A;
+}
+
+.editable {
+  cursor: pointer;
+}
+
+.move-up, .move-down, .remove-button {
+  color: #c0c0c0;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.move-up:hover {
+  color: @main-color;
+}
+
+.move-down:hover {
+  color: @main-color;
+}
+
+.remove-button {
+  color: #e44b23
+}

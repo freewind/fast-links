@@ -1,0 +1,7 @@
+{
+  "name": "resi-links",
+  "main": "index.html",
+  "dependencies": {
+    "node-fs": "^0.1.7"
+  }
+}
