@@ -71,7 +71,6 @@ object Application extends PageApplication {
 
   private def pageHeader() = header(
     div(
-      div(button("Edit!!!"))
     ).css("header")
   )
 
