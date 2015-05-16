@@ -17,8 +17,10 @@ object Application extends PageApplication {
 
   def view() = {
     div(
-      pageHeader(),
-      searchPanel(),
+      header(
+        pageHeader(),
+        searchPanel()
+      ),
       div(
         sidebar(),
         projectProfile()
@@ -28,12 +30,14 @@ object Application extends PageApplication {
 
   private def sidebar() = div(
     meta.map(_.categories.map { category =>
-      div(
-        div(category.name),
-        div(category.projects.map(project => projectNameStars(project))).css("project-list")
-      ).css("category")
+      oneCategory(category)
     }).map(div(_).css("category-list"))
   ).css("sidebar")
+
+  private def oneCategory(category: Category) = div(
+    div(category.name).css("category-name"),
+    div(category.projects.map(project => projectNameStars(project))).css("project-list")
+  ).css("category")
 
   def projectNameStars(project: Project) = div(
     span(project.name).css("project-name"), projectStars(project)
@@ -43,7 +47,7 @@ object Application extends PageApplication {
 
   private def projectStars(project: Project) = {
     project.stars.map(stars =>
-      span((0 to stars).map(_ => i().css("icon-star"))).css("stars")
+      span((0 until stars).map(_ => i().css("icon-star"))).css("stars")
     ).getOrElse(span())
   }
 
@@ -69,10 +73,9 @@ object Application extends PageApplication {
     }
   ).css("project-profile")
 
-  private def pageHeader() = header(
-    div(
-    ).css("header")
-  )
+  private def pageHeader() = div(
+    span(button("Edit").css("edit")).css("config-panel")
+  ).css("header")
 
   private def searchPanel() = div(
     text().placeholder("Search").css("search"),

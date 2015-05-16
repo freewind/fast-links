@@ -7,8 +7,16 @@
   overflow-y: scroll;
   background: rgb(247, 247, 247);
   color: #555;
+  .category-name {
+    line-height: 48px;
+    border-bottom: 1px solid #AAAAAA;
+    background-color: #EEEEEE;
+    color: #777777;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+  }
   .project-list {
-    padding-bottom: 60px;
     .project {
       cursor: pointer;
       padding: 0 @content-padding;
@@ -17,12 +25,15 @@
         padding-right: 5px;
       }
       &:first-child {
-        margin-top: 2px;
+        margin-top: 5px;
+      }
+      &:hover {
+        color: @main-color;
       }
     }
     .current-project {
       background-color: #EEEEEE;
-      border-bottom: 2px solid @main-color;
+      border-right: 5px solid @main-color;
     }
     .new-project {
       padding: @content-padding;
