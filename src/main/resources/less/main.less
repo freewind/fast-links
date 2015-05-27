@@ -1,49 +1,169 @@
-@import (css) "font.css";
+@windowWidth: 100%;
+@windowHeight: 100%;
+@bodyPadding: 5px;
 
-@window-width: 100%;
-@window-height: 100%;
-@sidebar-width: 25%;
-@header-height: 85px;
-@content-padding: 10px;
-@link-left-space: 30px;
-@dialog-width: 30%;
-@dialog-height: 25%;
+@linkColor: #666666;
+@hoverBgColor: #EDEDED;
 
-@link-color: #666666;
-@main-color: #36BE5E;
-@header-button-bg-color: #c0c0c0;
-@header-button-color: #555;
-@star-color: #F2AF00;
-@a-color: #4eadf2;
-@a-hover-color: #0a89e4;
-@shadow-color: #bbb;
-@border-color: silver;
+html, body {
+  width: @windowWidth;
+  max-height: @windowHeight;
+  padding: 0;
+  margin: 0;
+  overflow: scroll;
+}
 
-.button(@color, @background, @border, @hover-color, @hover-background, @hover-border) {
-  color: @color;
-  background: @background;
-  border: @border;
-  border-radius: 2px;
-  cursor: pointer;
-  display: inline-block;
+* {
   box-sizing: border-box;
-  &:hover {
-    color: @hover-color;
-    background: @hover-background;
-    border: @hover-border;
+}
+
+body {
+  padding: @bodyPadding;
+  overflow: auto;
+}
+
+a {
+  word-wrap: break-word;
+}
+
+#main-page {
+  .search-panel {
+    position: relative;
+    .search {
+      width: 100%;
+      height: 40px;
+      line-height: 40px;
+      font-size: 24px;
+    }
+    .clear-search {
+      position: absolute;
+      right: 15px;
+      top: 5px;
+      font-size: 16px;
+      color: #999999;
+      height: 30px;
+      width: 60px;
+      text-align: center;
+      cursor: pointer;
+    }
   }
+  .no-data-tips {
+    padding: 20px;
+    color: red;
+  }
+  .non-search, .search-results {
+    overflow: auto;
+    .category {
+      margin-bottom: 15px;
+      .category-name {
+        padding: 2px 0;
+        margin: 3px 0;
+        text-align: center;
+        background-color: #F6F6F6;
+        &:hover {
+          background-color: @hoverBgColor;
+        }
+      }
+      .projects {
+        .show-description {
+          color: #999999;
+          cursor: pointer;
+          font-size: 8px;
+          margin-left: 3px;
+          &:hover {
+            background-color: @hoverBgColor;
+          }
+        }
+        .project-description, .link-description {
+          color: #555555;
+          padding: 2px;
+          background-color: #F6F6F6;
+          margin: 2px 0 8px;
+        }
+        .link {
+          line-height: 20px;
+          .link-name {
+            margin-right: 5px;
+            color: #3360ba;
+          }
+          .link-url {
+            color: @linkColor;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          &:hover {
+            background-color: @hoverBgColor;
+          }
+        }
+        .project {
+        }
+        .project-separator {
+          margin: 20px 0 10px;
+          border-top: 1px solid #999999;
+        }
+        .project-name {
+          font-size: 16px;
+          line-height: 40px;
+          font-weight: bold;
+          &:hover {
+            background-color: @hoverBgColor;
+          }
+        }
+        .stars {
+          font-size: 14px;
+          color: #cd801e;
+          padding-left: 5px;
+        }
+        .link-groups {
+          padding-left: 3px;
+          .link-group {
+            margin-top: 10px;
+            position: relative;
+            background: #f3f3f3;
+            border-radius: 6px;
+            padding: 5px 5px 10px;
+            .link-group-name {
+              padding: 2px 0;
+              color: #444444;
+              font-weight: bold;
+              line-height: 180%;
+              &:hover {
+                background-color: @hoverBgColor;
+              }
+            }
+            .link-group-links {
+              padding-left: 12px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .highlight-search-item {
+    background-color: orange;
+  }
+
+  .highlight-char {
+    background-color: yellow;
+    font-weight: bold;
+  }
+
 }
 
-.form-input() {
-  border-radius: 4px;
-  border: 1px solid silver;
-  padding: 8px 10px;
-  box-sizing: border-box;
-}
+.link-form {
+  position: fixed;
+  border: solid 1px black;
+  left: 50%;
+  top: 50%;
+  background-color: white;
+  z-index: 100;
 
-@import "_base.less";
-@import "_header.less";
-@import "_search.less";
-@import "_sidebar.less";
-@import "_project.less";
-@import "_dialog.less";
+  height: 400px;
+  margin-top: -200px;
+
+  width: 600px;
+  margin-left: -300px;
+}

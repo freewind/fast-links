@@ -2,8 +2,6 @@ package in.freewind.fastlinks
 
 import java.util.UUID
 
-package object utils {
-
+object Utils {
   def newId() = UUID.randomUUID().toString.replace("-", "").toUpperCase
-
 }
