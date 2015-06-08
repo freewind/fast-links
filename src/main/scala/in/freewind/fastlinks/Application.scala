@@ -103,6 +103,22 @@ object Application extends PageApplication {
   private def openLink(url: String) = NodeWebkit.gui.Shell.openExternal(url)
 
   override def view(): View = "#main-page" >>> div(
+    ".sidebar" >>> sidebar(),
+    ".main-content" >>> mainContent()
+  )
+
+  private def sidebar() = div(allCategories.map(categories =>
+    ".categories" >>> div(categories.map(category =>
+      ".category" >>> div(
+        ".category-name" >>> div(category.name),
+        ".project-list" >>> div(category.projects.map(p =>
+          ".project" >>> div(p.name)
+        ))
+      )
+    ))
+  ))
+
+  private def mainContent() = div(
     div(
       button("Edit").onClick(_ => editing := !editing.get)
     ),

@@ -1,6 +1,9 @@
 @windowWidth: 100%;
 @windowHeight: 100%;
 @bodyPadding: 5px;
+@sidebarWidth: 300px;
+@contentPadding: 10px;
+@mainColor: red;
 
 @linkColor: #666666;
 @hoverBgColor: #EDEDED;
@@ -27,130 +30,176 @@ a {
 }
 
 #main-page {
-  .search-panel {
-    position: relative;
-    .search {
-      width: 100%;
-      height: 40px;
-      line-height: 40px;
-      font-size: 24px;
-    }
-    .clear-search {
-      position: absolute;
-      right: 15px;
-      top: 5px;
-      font-size: 16px;
-      color: #999999;
-      height: 30px;
-      width: 60px;
+  .sidebar {
+    width: @sidebarWidth;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    overflow-y: scroll;
+    background: rgb(247, 247, 247);
+    color: #555;
+    .category-name {
+      line-height: 48px;
+      border-bottom: 1px solid #AAAAAA;
+      background-color: #EEEEEE;
+      color: #777777;
       text-align: center;
-      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
     }
-  }
-  .no-data-tips {
-    padding: 20px;
-    color: red;
-  }
-  .non-search, .search-results {
-    overflow: auto;
-    .category {
-      margin-bottom: 15px;
-      .category-name {
-        padding: 2px 0;
-        margin: 3px 0;
-        text-align: center;
-        background-color: #F6F6F6;
+    .project-list {
+      .project {
+        cursor: pointer;
+        padding: 0 @contentPadding;
+        line-height: 28px;
+        .project-name {
+          padding-right: 5px;
+        }
+        &:first-child {
+          margin-top: 5px;
+        }
         &:hover {
-          background-color: @hoverBgColor;
+          color: @mainColor;
         }
       }
-      .projects {
-        .show-description {
-          color: #999999;
-          cursor: pointer;
-          font-size: 8px;
-          margin-left: 3px;
+      .current-project {
+        background-color: #EEEEEE;
+        border-right: 5px solid @mainColor;
+      }
+    }
+  }
+  .main-content {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: @sidebarWidth;
+    overflow-y: scroll;
+    .search-panel {
+      position: relative;
+      .search {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        font-size: 24px;
+      }
+      .clear-search {
+        position: absolute;
+        right: 15px;
+        top: 5px;
+        font-size: 16px;
+        color: #999999;
+        height: 30px;
+        width: 60px;
+        text-align: center;
+        cursor: pointer;
+      }
+    }
+    .no-data-tips {
+      padding: 20px;
+      color: red;
+    }
+    .non-search, .search-results {
+      overflow: auto;
+      .category {
+        margin-bottom: 15px;
+        .category-name {
+          padding: 2px 0;
+          margin: 3px 0;
+          text-align: center;
+          background-color: #F6F6F6;
           &:hover {
             background-color: @hoverBgColor;
           }
         }
-        .project-description, .link-description {
-          color: #555555;
-          padding: 2px;
-          background-color: #F6F6F6;
-          margin: 2px 0 8px;
-        }
-        .link {
-          line-height: 20px;
-          .link-name {
-            margin-right: 5px;
-            color: #3360ba;
-          }
-          .link-url {
-            color: @linkColor;
-            text-decoration: none;
+        .projects {
+          .show-description {
+            color: #999999;
+            cursor: pointer;
+            font-size: 8px;
+            margin-left: 3px;
             &:hover {
-              text-decoration: underline;
+              background-color: @hoverBgColor;
             }
           }
-          &:hover {
-            background-color: @hoverBgColor;
+          .project-description, .link-description {
+            color: #555555;
+            padding: 2px;
+            background-color: #F6F6F6;
+            margin: 2px 0 8px;
           }
-        }
-        .project {
-        }
-        .project-separator {
-          margin: 20px 0 10px;
-          border-top: 1px solid #999999;
-        }
-        .project-name {
-          font-size: 16px;
-          line-height: 40px;
-          font-weight: bold;
-          &:hover {
-            background-color: @hoverBgColor;
-          }
-        }
-        .stars {
-          font-size: 14px;
-          color: #cd801e;
-          padding-left: 5px;
-        }
-        .link-groups {
-          padding-left: 3px;
-          .link-group {
-            margin-top: 10px;
-            position: relative;
-            background: #f3f3f3;
-            border-radius: 6px;
-            padding: 5px 5px 10px;
-            .link-group-name {
-              padding: 2px 0;
-              color: #444444;
-              font-weight: bold;
-              line-height: 180%;
+          .link {
+            line-height: 20px;
+            .link-name {
+              margin-right: 5px;
+              color: #3360ba;
+            }
+            .link-url {
+              color: @linkColor;
+              text-decoration: none;
               &:hover {
-                background-color: @hoverBgColor;
+                text-decoration: underline;
               }
             }
-            .link-group-links {
-              padding-left: 12px;
+            &:hover {
+              background-color: @hoverBgColor;
+            }
+          }
+          .project {
+          }
+          .project-separator {
+            margin: 20px 0 10px;
+            border-top: 1px solid #999999;
+          }
+          .project-name {
+            font-size: 16px;
+            line-height: 40px;
+            font-weight: bold;
+            &:hover {
+              background-color: @hoverBgColor;
+            }
+          }
+          .stars {
+            font-size: 14px;
+            color: #cd801e;
+            padding-left: 5px;
+          }
+          .link-groups {
+            padding-left: 3px;
+            .link-group {
+              margin-top: 10px;
+              position: relative;
+              background: #f3f3f3;
+              border-radius: 6px;
+              padding: 5px 5px 10px;
+              .link-group-name {
+                padding: 2px 0;
+                color: #444444;
+                font-weight: bold;
+                line-height: 180%;
+                &:hover {
+                  background-color: @hoverBgColor;
+                }
+              }
+              .link-group-links {
+                padding-left: 12px;
+              }
             }
           }
         }
       }
     }
-  }
 
-  .highlight-search-item {
-    background-color: orange;
-  }
+    .highlight-search-item {
+      background-color: orange;
+    }
 
-  .highlight-char {
-    background-color: yellow;
-    font-weight: bold;
-  }
+    .highlight-char {
+      background-color: yellow;
+      font-weight: bold;
+    }
 
+  }
 }
 
 .link-form {
