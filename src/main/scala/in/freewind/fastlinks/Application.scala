@@ -7,6 +7,7 @@ import org.scalajs.dom.ext.KeyCode
 import org.widok.{ReadChannel, Opt, PageApplication, Var, View}
 import org.widok.html._
 import upickle._
+import LayoutWithSelectors._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -16,13 +17,14 @@ object Application extends PageApplication {
   val selected: Opt[Link] = Opt()
   val editing = Var[Boolean](false)
 
-  val creatingLinkInGroup = Var[Option[LinkGroup]](None)
+  //  val creatingLinkInGroup = Var[Option[LinkGroup]](None)
 
   keyword.combine(selected).attach { case (key, link) =>
     // saveSnapshot(key, link)
   }
 
   val meta = Var[Option[Meta]](None)
+  val allCategories = meta.map(_.toSeq.flatMap(_.categories))
   val tree: ReadChannel[Seq[Category]] = keyword.combine(meta).distinct.map({ case (k, m) => (k.trim.toLowerCase, m.toSeq.flatMap(_.categories)) }).map {
     case (key, cs) if key.isEmpty => cs
     case (key, cs) => cs.flatMap { category =>
@@ -100,97 +102,104 @@ object Application extends PageApplication {
 
   private def openLink(url: String) = NodeWebkit.gui.Shell.openExternal(url)
 
-  override def view(): View = div(
-    div(creatingLinkInGroup.get.map(_.toString).getOrElse[String]("")),
+  override def view(): View = "#main-page" >>> div(
     div(
       button("Edit").onClick(_ => editing := !editing.get)
     ),
     div(
-      div(
+      ".search-panel" >>> div(
         uiSearchInput(),
-        button("Clear").css("clear-search").onClick(_ => keyword := "")
-      ).css("search-panel")
+        ".clear-search" >>> button("Clear").onClick(_ => keyword := "")
+      )
     ),
-    div(tree.map(categories =>
+    ".search-results" >>> div(tree.map(categories =>
       div(categories.map(category =>
-        div(
+        ".category" >>> div(
           uiCategoryName(category),
-          div(
+          ".projects" >>> div(
             category.projects.map(project =>
               div(
-                div(
+                ".project" >>> div(
                   uiProjectName(project),
-                  div(project.linkGroups.map(linkGroup =>
-                    div(
+                  ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
+                    val showLinkForm = Var(false)
+                    ".link-group" >>> div(
                       uiGroupName(linkGroup),
-                      div(
+                      ".link-group-links" >>> div(
                         linkGroup.links.map(uiLink),
                         div(
-                          button("+ link").onClick(_ => creatingLinkInGroup := Some(linkGroup))
-                        ).show(editing)
-                      ).css("link-group-links")
-                    ).css("link-group")
-                  )).css("link-groups"),
+                          button("+ link").onClick(_ => showLinkForm := true)
+                        ).show(editing),
+                        new LinkForm().apply(linkGroup, showLinkForm)
+                      )
+                    )
+                  })),
                   div(
                     button("+ group")
                   ).show(editing)
-                ).css("project"),
-                div().css("project-separator"))
+                ),
+                ".project-separator" >>> div()
+              )
             ).map(div(_))
-          ).css("projects")
-        ).css("category")
+          )
+        )
       )))
-    ).css("search-results"),
-    uiForms()
-  ).id("main-page")
-
-
-  private val newLinkTitle = Var[String]("")
-  private val newLinkUrl = Var[String]("")
-  private val newLinkDescription = Var[String]("")
-
-  private def uiForms() = div(
-    div(
-      div("Link form"),
-      div(
-        div(text().bind(newLinkTitle).placeholder("Title")),
-        div(text().bind(newLinkUrl).placeholder("URL")),
-        div(text().bind(newLinkDescription).placeholder("description"))
-      ),
-      div(
-        button("Close").onClick(_ => clearCreatingLinkVars()),
-        button("OK").onClick { _ =>
-          createLink(creatingLinkInGroup.get.get)
-          clearCreatingLinkVars()
-        }
-      )
-    ).css("link-form")
-      .show(creatingLinkInGroup.map(_.isDefined))
+    )
   )
 
-  private def clearCreatingLinkVars(): Unit = {
-    newLinkTitle := ""
-    newLinkUrl := ""
-    newLinkDescription := ""
-    creatingLinkInGroup := None
-  }
+  class LinkForm {
+    val newLinkTitle = Var[String]("")
+    val newLinkUrl = Var[String]("")
+    val newLinkDescription = Var[String]("")
+    val selectedLinkGroup = Opt[LinkGroup]()
 
-  private def createLink(linkGroup: LinkGroup): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-            linkGroup.copy(links = linkGroup.links :+
-              new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get)))
+    private def createLink(): Unit = {
+      meta := meta.get.map { mmm =>
+        mmm.copy(categories = mmm.categories.map { category =>
+          category.copy(projects = category.projects.map { project =>
+            project.copy(linkGroups = project.linkGroups.map { linkGroup =>
+              val links = if (linkGroup == selectedLinkGroup.get) {
+                linkGroup.links :+ new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
+              } else {
+                linkGroup.links
+              }
+              linkGroup.copy(links = links)
+            })
           })
         })
-      })
+      }
+    }
+
+    //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = allCategories.map(cs => cs.flatMap(_.projects).flatMap { p =>
+    //      select.Option(p.name).enabled(value = false) +: p.linkGroups.map(g => select.Option("-- " + g.name).onClick { _ =>
+    //        println("clicked!!!")
+    //        selectedLinkGroup := g
+    //      })
+    //    })
+
+    def apply(linkGroup: LinkGroup, showLinkForm: Var[Boolean]) = {
+      selectedLinkGroup := linkGroup
+      ".link-form" >>> div(
+        div(selectedLinkGroup.map(_.toString)),
+        div("Link form"),
+        div(
+          div(text().bind(newLinkTitle).placeholder("Title")),
+          div(text().bind(newLinkUrl).placeholder("URL")),
+          div(text().bind(newLinkDescription).placeholder("description"))
+        ),
+        div(
+          button("Close").onClick(_ => showLinkForm := false),
+          button("OK").onClick { _ =>
+            createLink()
+            showLinkForm := false
+          }
+        )
+      ).show(showLinkForm)
     }
   }
 
   private def uiSearchInput() = {
-    text()
-      .css("search")
+    ".search" >>> text()
       .bind(keyword)
       // Note: must be `onKeyUp` rather than `onKeyPress/onKeyDown`
       .onKeyUp(e => moveSelection(e))
@@ -198,36 +207,30 @@ object Application extends PageApplication {
   }
 
   private def uiCategoryName(category: Category) = {
-    div(highlight(category.name, keyword.get))
-      .css("category-name")
+    ".category-name" >>> div(highlight(category.name, keyword.get))
   }
 
   private def uiProjectName(project: Project) = {
-    div(span(highlight(project.name, keyword.get)), stars(project.stars))
-      .css("project-name")
+    ".project-name" >>> div(span(highlight(project.name, keyword.get)), stars(project.stars))
   }
 
   private def uiGroupName(linkGroup: LinkGroup) = {
-    div(highlight(linkGroup.name, keyword.get))
-      .css("link-group-name")
+    ".link-group-name" >>> div(highlight(linkGroup.name, keyword.get))
   }
 
   private def uiLink(link: Link) = {
-    div(
-      span(highlight(link.name.getOrElse(""), keyword.get))
-        .css("link-name"),
-      a(highlight(link.url, keyword.get)).url(link.url).attribute("target", "_blank")
-        .css("link-url")
+    ".link" >>> div(
+      ".link-name" >>> span(highlight(link.name.getOrElse(""), keyword.get)),
+      ".link-url" >>> a(highlight(link.url, keyword.get)).url(link.url).attribute("target", "_blank")
         .onClick { e: dom.MouseEvent =>
         e.preventDefault()
         openLink(link.url)
       })
-      .css("link")
       .cssState(selected.is(link), "highlight-search-item")
   }
 
   private def stars(value: Option[Int]) = value match {
-    case Some(n) => span((1 to n).toList.map(_ => span("★"))).css("stars")
+    case Some(n) => ".stars" >>> span((1 to n).toList.map(_ => span("★")))
     case _ => span()
   }
 
@@ -249,7 +252,7 @@ object Application extends PageApplication {
   }
 
   private def highlightChars(chars: Seq[ResultString]) = chars.map {
-    case MatchedString(c) => span(c).css("highlight-char")
+    case MatchedString(c) => ".highlight-char" >>> span(c)
     case NonMatchString(c) => span(c)
   }
 }
@@ -289,6 +292,7 @@ object Matches {
       None
     }
   }
+
 }
 
 sealed abstract class ResultString(str: String)

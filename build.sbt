@@ -20,7 +20,7 @@ persistLauncher := true
 
 libraryDependencies ++= Seq(
   "com.lihaoyi" %%% "upickle" % "0.2.8",
-  "io.github.widok" %%% "widok" % "0.2.1"
+  "io.github.widok" %%% "widok" % "0.2.2-SNAPSHOT"
 )
 
 lessSettings
