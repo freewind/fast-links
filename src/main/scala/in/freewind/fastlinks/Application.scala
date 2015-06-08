@@ -106,8 +106,12 @@ object Application extends PageApplication {
 
   override def view(): View = "#main-page" >>> div(
     ".sidebar" >>> sidebar().show(showSidebar),
-    ".main-content" >>> mainContent()
-  ).onKeyPress(event => if (toggleSidebarKey(event)) showSidebar := !showSidebar.get)
+    ".main-content" >>> mainContent().cssState(showSidebar.map(!_), "no-sidebar")
+  )
+
+  document.keyDown.attach { event =>
+    if (toggleSidebarKey(event)) showSidebar := !showSidebar.get
+  }
 
   private def toggleSidebarKey(event: dom.KeyboardEvent) = {
     event.metaKey && event.keyCode == KeyCode.num1
