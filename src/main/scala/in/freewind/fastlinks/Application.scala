@@ -17,6 +17,8 @@ object Application extends PageApplication {
   val selected: Opt[Link] = Opt()
   val editing = Var[Boolean](false)
 
+  val showSidebar = Var(false)
+
   //  val creatingLinkInGroup = Var[Option[LinkGroup]](None)
 
   keyword.combine(selected).attach { case (key, link) =>
@@ -103,9 +105,13 @@ object Application extends PageApplication {
   private def openLink(url: String) = NodeWebkit.gui.Shell.openExternal(url)
 
   override def view(): View = "#main-page" >>> div(
-    ".sidebar" >>> sidebar(),
+    ".sidebar" >>> sidebar().show(showSidebar),
     ".main-content" >>> mainContent()
-  )
+  ).onKeyPress(event => if (toggleSidebarKey(event)) showSidebar := !showSidebar.get)
+
+  private def toggleSidebarKey(event: dom.KeyboardEvent) = {
+    event.metaKey && event.keyCode == KeyCode.num1
+  }
 
   private def sidebar() = div(allCategories.map(categories =>
     ".categories" >>> div(categories.map(category =>
@@ -120,6 +126,7 @@ object Application extends PageApplication {
 
   private def mainContent() = div(
     div(
+      "sidebar-toggle" >>> button("show sidebar").onClick(_ => showSidebar := !showSidebar.get),
       button("Edit").onClick(_ => editing := !editing.get)
     ),
     div(
