@@ -122,7 +122,7 @@ object Application extends PageApplication {
       ".category" >>> div(
         ".category-name" >>> div(category.name),
         ".project-list" >>> div(category.projects.map(p =>
-          ".project" >>> div(p.name)
+          ".project" >>> div(a(p.name).url(s"#${p.id}"))
         ))
       )
     ))
@@ -146,7 +146,7 @@ object Application extends PageApplication {
           ".projects" >>> div(
             category.projects.map(project =>
               div(
-                ".project" >>> div(
+                s"#${project.id}.project" >>> div(
                   uiProjectName(project),
                   ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
                     val showLinkForm = Var(false)
