@@ -122,11 +122,15 @@ case class MainPage() extends Page {
       ".category" >>> div(
         ".category-name" >>> div(category.name),
         ".project-list" >>> div(category.projects.map(p =>
-          ".project" >>> div(a(p.name).url(s"#${p.id}"))
+          ".project" >>> div(p.name).onClick(_ => scrollTo(p.id))
         ))
       )
     ))
   ))
+
+  private def scrollTo(projectId: String): Unit = {
+    dom.document.getElementById(projectId).scrollIntoView(true)
+  }
 
   private def mainContent() = div(
     div(
