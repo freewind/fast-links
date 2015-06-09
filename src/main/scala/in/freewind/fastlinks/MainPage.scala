@@ -4,14 +4,14 @@ import libs.{NodeWebkit, NodeJs}
 import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
-import org.widok.{ReadChannel, Opt, PageApplication, Var, View}
+import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, PageApplication, Var, View}
 import org.widok.html._
 import upickle._
 import LayoutWithSelectors._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object Application extends PageApplication {
+case class MainPage() extends Page {
 
   val keyword = Var[String]("")
   val selected: Opt[Link] = Opt()
@@ -131,7 +131,7 @@ object Application extends PageApplication {
   private def mainContent() = div(
     div(
       "sidebar-toggle" >>> button("show sidebar").onClick(_ => showSidebar := !showSidebar.get),
-      button("Edit").onClick(_ => editing := !editing.get)
+      button("Edit").onClick(_ => Entry.editPage().go())
     ),
     div(
       ".search-panel" >>> div(
@@ -261,11 +261,10 @@ object Application extends PageApplication {
     case _ => span()
   }
 
-  override def ready(): Unit = {
+  override def ready(route: InstantiatedRoute): Unit = {
     NodeJs.readFile("/Users/twer/workspace/fast-links/data.json").map(upickle.read[Meta]).map { meta =>
       meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
     }.foreach(meta := Some(_))
-
   }
 
   private def highlight(content: String, keyword: String) = {
