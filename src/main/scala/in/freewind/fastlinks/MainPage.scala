@@ -4,18 +4,15 @@ import libs.{NodeWebkit, NodeJs}
 import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
-import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, PageApplication, Var, View}
+import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
 import LayoutWithSelectors._
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 case class MainPage() extends Page {
 
   val keyword = Var[String]("")
   val selected: Opt[Link] = Opt()
-  val editing = Var[Boolean](false)
 
   val showSidebar = Var(false)
 
@@ -25,9 +22,7 @@ case class MainPage() extends Page {
     // saveSnapshot(key, link)
   }
 
-  val meta = Var[Option[Meta]](None)
-  val allCategories = meta.map(_.toSeq.flatMap(_.categories))
-  val tree: ReadChannel[Seq[Category]] = keyword.combine(meta).distinct.map({ case (k, m) => (k.trim.toLowerCase, m.toSeq.flatMap(_.categories)) }).map {
+  val tree: ReadChannel[Seq[Category]] = keyword.combine(DataStore.meta).distinct.map({ case (k, m) => (k.trim.toLowerCase, m.toSeq.flatMap(_.categories)) }).map {
     case (key, cs) if key.isEmpty => cs
     case (key, cs) => cs.flatMap { category =>
       val myProjects = category.projects.flatMap { project =>
@@ -117,7 +112,7 @@ case class MainPage() extends Page {
     event.metaKey && event.keyCode == KeyCode.num1
   }
 
-  private def sidebar() = div(allCategories.map(categories =>
+  private def sidebar() = div(DataStore.allCategories.map(categories =>
     ".categories" >>> div(categories.map(category =>
       ".category" >>> div(
         ".category-name" >>> div(category.name),
@@ -153,21 +148,13 @@ case class MainPage() extends Page {
                 s"#${project.id}.project" >>> div(
                   uiProjectName(project),
                   ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
-                    val showLinkForm = Var(false)
                     ".link-group" >>> div(
                       uiGroupName(linkGroup),
                       ".link-group-links" >>> div(
-                        linkGroup.links.map(uiLink),
-                        div(
-                          button("+ link").onClick(_ => showLinkForm := true)
-                        ).show(editing),
-                        new LinkForm().apply(linkGroup, showLinkForm)
+                        linkGroup.links.map(uiLink)
                       )
                     )
-                  })),
-                  div(
-                    button("+ group")
-                  ).show(editing)
+                  }))
                 ),
                 ".project-separator" >>> div()
               )
@@ -177,57 +164,6 @@ case class MainPage() extends Page {
       )))
     )
   )
-
-  class LinkForm {
-    val newLinkTitle = Var[String]("")
-    val newLinkUrl = Var[String]("")
-    val newLinkDescription = Var[String]("")
-    val selectedLinkGroup = Opt[LinkGroup]()
-
-    private def createLink(): Unit = {
-      meta := meta.get.map { mmm =>
-        mmm.copy(categories = mmm.categories.map { category =>
-          category.copy(projects = category.projects.map { project =>
-            project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-              val links = if (linkGroup == selectedLinkGroup.get) {
-                linkGroup.links :+ new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
-              } else {
-                linkGroup.links
-              }
-              linkGroup.copy(links = links)
-            })
-          })
-        })
-      }
-    }
-
-    //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = allCategories.map(cs => cs.flatMap(_.projects).flatMap { p =>
-    //      select.Option(p.name).enabled(value = false) +: p.linkGroups.map(g => select.Option("-- " + g.name).onClick { _ =>
-    //        println("clicked!!!")
-    //        selectedLinkGroup := g
-    //      })
-    //    })
-
-    def apply(linkGroup: LinkGroup, showLinkForm: Var[Boolean]) = {
-      selectedLinkGroup := linkGroup
-      ".link-form" >>> div(
-        div(selectedLinkGroup.map(_.toString)),
-        div("Link form"),
-        div(
-          div(text().bind(newLinkTitle).placeholder("Title")),
-          div(text().bind(newLinkUrl).placeholder("URL")),
-          div(text().bind(newLinkDescription).placeholder("description"))
-        ),
-        div(
-          button("Close").onClick(_ => showLinkForm := false),
-          button("OK").onClick { _ =>
-            createLink()
-            showLinkForm := false
-          }
-        )
-      ).show(showLinkForm)
-    }
-  }
 
   private def uiSearchInput() = {
     ".search" >>> text()
@@ -266,9 +202,7 @@ case class MainPage() extends Page {
   }
 
   override def ready(route: InstantiatedRoute): Unit = {
-    NodeJs.readFile("/Users/twer/workspace/fast-links/data.json").map(upickle.read[Meta]).map { meta =>
-      meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
-    }.foreach(meta := Some(_))
+    DataStore.loadData()
   }
 
   private def highlight(content: String, keyword: String) = {
