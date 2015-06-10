@@ -50,8 +50,28 @@ case class EditPage() extends Page {
   ))
 
   private def mainContent() = div(
-    Button(Glyphicon.User()).size(Size.ExtraSmall).title("Done").onClick(_ => Entry.mainPage().go()),
-    ".project-profile" >>> div(selectedProject.map(project => project.name))
+    Button(Glyphicon.Ok()).size(Size.ExtraSmall).title("Done").onClick(_ => Entry.mainPage().go()),
+    ".project-profile" >>> div(selectedProject.map(project =>
+      div(
+        ".project" >>> div(
+          ".project-name" >>> div(project.name),
+          ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
+            ".link-group" >>> div(
+              ".link-group-name" >>> div(linkGroup.name),
+              ".link-group-links" >>> div(
+                linkGroup.links.map(link =>
+                  ".link" >>> div(
+                    ".link-name" >>> span(link.name.getOrElse[String]("")),
+                    ".link-url" >>> a(link.url).url(link.url).attribute("target", "_blank")
+                  )
+                )
+              )
+            )
+          }))
+        ),
+        ".project-separator" >>> div()
+      )
+    ))
   )
 
   class LinkForm {
