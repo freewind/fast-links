@@ -65,7 +65,8 @@ case class EditPage() extends Page {
                     ".link-url" >>> a(link.url).url(link.url).attribute("target", "_blank")
                   )
                 )
-              )
+              ),
+              Button(Glyphicon.Plus(), span(" Link")).size(Size.ExtraSmall)
             )
           }))
         ),
