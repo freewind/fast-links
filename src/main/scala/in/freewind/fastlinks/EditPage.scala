@@ -4,6 +4,7 @@ import libs.{NodeWebkit, NodeJs}
 import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
+import org.widok.bindings.Bootstrap._
 import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
@@ -14,30 +15,43 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class EditPage() extends Page {
 
   val selectedProject = Opt[Project]()
+  val toggled = Var(false)
 
   override def ready(route: InstantiatedRoute): Unit = {
     DataStore.loadData()
   }
 
   override def view(): View = "#edit-page" >>> div(
-    ".sidebar" >>> sidebar(),
-    ".main-content" >>> mainContent()
+    "#wrapper" >>> div(
+      "#sidebar-wrapper" >>> div(
+        ".sidebar-nav" >>> sidebar()
+      ),
+      "#page-content-wrapper" >>> div(
+        ".container-fluid" >>> div(
+          ".row" >>> div(
+            ".col-lg-12" >>> div(
+              "#menu-toggle.btn.btn-default" >>> button("Toggle Menu").onClick(_ => toggled.update(!_)),
+              ".main-content" >>> mainContent()
+            )
+          )
+        )
+      )
+    ).cssState(toggled, "toggled")
   )
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
     ".categories" >>> div(categories.map(category =>
-      ".category" >>> div(
-        ".category-name" >>> div(category.name),
-        ".project-list" >>> div(category.projects.map(p =>
-          ".project" >>> div(p.name).onClick(_ => selectedProject := p)
-        ))
+      ".category" >>> ul(
+        (".category-name.sidebar-brand" >>> li(a(category.name))) :: category.projects.map(p =>
+          ".project" >>> li(a(p.name)).onClick(_ => selectedProject := p)
+        ).toList: _*
       )
     ))
   ))
 
   private def mainContent() = div(
-    button("done").onClick(_ => Entry.mainPage().go()),
-    ".project-profile" >>> div(selectedProject.map(_.name))
+    Button(Glyphicon.User()).size(Size.ExtraSmall).title("Done").onClick(_ => Entry.mainPage().go()),
+    ".project-profile" >>> div(selectedProject.map(project => project.name))
   )
 
   class LinkForm {
