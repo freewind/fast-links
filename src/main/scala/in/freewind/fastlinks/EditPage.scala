@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class EditPage() extends Page {
 
   val selectedProject = Opt[Project]()
-  val toggled = Var(false)
+  val showSidebar = Var(true)
 
   override def ready(route: InstantiatedRoute): Unit = {
     DataStore.loadData()
@@ -30,13 +30,13 @@ case class EditPage() extends Page {
         ".container-fluid" >>> div(
           ".row" >>> div(
             ".col-lg-12" >>> div(
-              "#menu-toggle.btn.btn-default" >>> button("Toggle Menu").onClick(_ => toggled.update(!_)),
+              "#menu-toggle.btn.btn-default" >>> button("Toggle Menu").onClick(_ => showSidebar.update(!_)),
               ".main-content" >>> mainContent()
             )
           )
         )
       )
-    ).cssState(toggled, "toggled")
+    ).cssState(showSidebar, "toggled")
   )
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
