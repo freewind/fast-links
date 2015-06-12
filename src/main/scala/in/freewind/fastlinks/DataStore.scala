@@ -7,13 +7,22 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object DataStore {
 
+  val dataFilePath = "/Users/twer/workspace/fast-links/data.json"
+
   val meta = Var[Option[Meta]](None)
+
   val allCategories = meta.map(_.toSeq.flatMap(_.categories))
 
   def loadData(): Unit = {
-    NodeJs.readFile("/Users/twer/workspace/fast-links/data.json").map(upickle.read[Meta]).map { meta =>
-      meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
-    }.foreach(meta := Some(_))
+    meta := Some(sortProjects(upickle.read[Meta](NodeJs.readFile(dataFilePath))))
+  }
+
+  private def sortProjects(meta: Meta) = {
+    meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
+  }
+
+  def saveData(): Unit = {
+    meta.get.foreach(m => NodeJs.writeFile(dataFilePath, upickle.write[Meta](m)))
   }
 
   def addLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {

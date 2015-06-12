@@ -3,5 +3,6 @@ package libs.wrappers
 import scala.scalajs.js
 
 trait NodeFS extends js.Object {
-  def readFile(path: String, options: js.Any, callback: js.Function2[js.Any, String, Unit] = ???): Unit = js.native
+  def readFileSync(path: String, options: js.Any): String = js.native
+  def writeFileSync(path: String, content: String, options: js.Any): Unit = js.native
 }

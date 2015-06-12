@@ -50,7 +50,7 @@ case class EditPage() extends Page {
   ))
 
   private def mainContent() = div(
-    Button(Glyphicon.Ok()).size(Size.ExtraSmall).title("Done").onClick(_ => Entry.mainPage().go()),
+    Button(Glyphicon.Ok()).size(Size.ExtraSmall).title("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
     ".project-profile" >>> div(selectedProject.map(project =>
       div(
         ".project" >>> div(
