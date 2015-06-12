@@ -5,7 +5,7 @@ import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
 import org.widok.bindings.Bootstrap._
-import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
+import org.widok.{Channel, Buffer, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
 import LayoutWithSelectors._
@@ -56,6 +56,8 @@ case class EditPage() extends Page {
         ".project" >>> div(
           ".project-name" >>> div(project.name),
           ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
+            val creatingLink = Var(false)
+
             ".link-group" >>> div(
               ".link-group-name" >>> div(linkGroup.name),
               ".link-group-links" >>> div(
@@ -67,6 +69,8 @@ case class EditPage() extends Page {
                 )
               ),
               Button(Glyphicon.Plus(), span(" Link")).size(Size.ExtraSmall)
+                .show(!creatingLink.get).onClick(_ => creatingLink.update(!_)),
+              new LinkForm().apply(linkGroup, creatingLink)
             )
           }))
         ),
@@ -79,36 +83,30 @@ case class EditPage() extends Page {
     val newLinkTitle = Var[String]("")
     val newLinkUrl = Var[String]("")
     val newLinkDescription = Var[String]("")
-    val selectedLinkGroup = Opt[LinkGroup]()
+    val selectedLinkGroup = Var[Option[Either[Project, LinkGroup]]](None)
 
-    //    private def createLink(): Unit = {
-    //      meta := meta.get.map { mmm =>
-    //        mmm.copy(categories = mmm.categories.map { category =>
-    //          category.copy(projects = category.projects.map { project =>
-    //            project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-    //              val links = if (linkGroup == selectedLinkGroup.get) {
-    //                linkGroup.links :+ new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
-    //              } else {
-    //                linkGroup.links
-    //              }
-    //              linkGroup.copy(links = links)
-    //            })
-    //          })
-    //        })
-    //      }
-    //    }
+    private def createLink(): Unit = {
+      val newLink = new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
+      selectedLinkGroup.get match {
+        case Some(Right(linkGroup)) => DataStore.addLink(linkGroup, newLink)
+        case _ =>
+      }
+    }
 
-    //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = allCategories.map(cs => cs.flatMap(_.projects).flatMap { p =>
-    //      select.Option(p.name).enabled(value = false) +: p.linkGroups.map(g => select.Option("-- " + g.name).onClick { _ =>
-    //        println("clicked!!!")
-    //        selectedLinkGroup := g
-    //      })
-    //    })
+    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
+      Buffer(projects.flatMap(p => Left(p) +: p.linkGroups.map(g => Right(g))): _*)
+    }.get: _*)
+
+    def showLinkGroupOptions(projectOrLinkGroup: Either[Project, LinkGroup]) = projectOrLinkGroup match {
+      case Left(project) => option(project.name).enabled(false)
+      case Right(linkGroup) => option(" - " + linkGroup.name)
+    }
 
     def apply(linkGroup: LinkGroup, showLinkForm: Var[Boolean]) = {
-      selectedLinkGroup := linkGroup
+      selectedLinkGroup := Some(Right(linkGroup))
       ".link-form" >>> div(
         div(selectedLinkGroup.map(_.toString)),
+        select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
         div("Link form"),
         div(
           div(text().bind(newLinkTitle).placeholder("Title")),
@@ -118,12 +116,17 @@ case class EditPage() extends Page {
         div(
           button("Close").onClick(_ => showLinkForm := false),
           button("OK").onClick { _ =>
-            //            createLink()
+            createLink()
+            updateSelectedProject()
             showLinkForm := false
           }
         )
       ).show(showLinkForm)
     }
+  }
+
+  private def updateSelectedProject(): Unit = {
+    selectedProject.update(p => DataStore.findProject(p.id).getOrElse(p))
   }
 
 }
