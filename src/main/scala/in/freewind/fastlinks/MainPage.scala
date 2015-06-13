@@ -82,17 +82,17 @@ case class MainPage() extends Page {
 
   def moveSelection(event: KeyboardEvent): Unit = {
     event.keyCode match {
-      case KeyCode.up =>
+      case KeyCode.Up =>
         list.get.span(_ != selected.get)._1.lastOption.orElse(list.get.lastOption).foreach(selected := _)
-      case KeyCode.down =>
+      case KeyCode.Down =>
         list.get.span(_ != selected.get)._2.tail.headOption.orElse(list.get.headOption).foreach(selected := _)
-      case KeyCode.enter => {
+      case KeyCode.Enter => {
         selected.toOption match {
           case Some(link) => openLink(link.url)
           case _ =>
         }
       }
-      case KeyCode.escape => keyword := ""
+      case KeyCode.Escape => keyword := ""
       case _ =>
     }
   }
@@ -109,7 +109,7 @@ case class MainPage() extends Page {
   }
 
   private def toggleSidebarKey(event: dom.KeyboardEvent) = {
-    event.metaKey && event.keyCode == KeyCode.num1
+    event.metaKey && event.keyCode == KeyCode.Num1
   }
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
