@@ -78,6 +78,19 @@ object DataStore {
     }
   }
 
+  def updateLinkGroup(linkGroup: LinkGroup): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map { project =>
+          project.copy(linkGroups = project.linkGroups.map {
+            case g if g.id == linkGroup.id => linkGroup
+            case g => g
+          })
+        })
+      })
+    }
+  }
+
   def findProject(id: String): Option[Project] = {
     meta.get.flatMap(_.categories.flatMap(_.projects).find(_.id == id))
   }

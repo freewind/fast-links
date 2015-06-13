@@ -61,8 +61,12 @@ case class EditPage() extends Page {
           ".project-name" >>> div(project.name),
           ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
             val showCreatingForm = Var(false)
+            val showChangeLinkGroupNameForm = Var(false)
             ".link-group" >>> div(
-              ".link-group-name" >>> div(linkGroup.name),
+              ".link-group-name" >>> div(
+                div(linkGroup.name).onClick(_ => showChangeLinkGroupNameForm := true).show(showChangeLinkGroupNameForm.map(!_)),
+                new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm)
+              ),
               ".link-group-links" >>> div(
                 linkGroup.links.map { link =>
                   val showEditingForm = Var(false)
@@ -162,6 +166,21 @@ case class EditPage() extends Page {
         }
       )
     ).show(showForm)
+  }
+
+  class ChangeLinkGroupNameForm(linkGroup: LinkGroup) {
+    val newGroupName = Var(linkGroup.name)
+    def apply(showForm: Var[Boolean]) = div(
+      div(text().bind(newGroupName)),
+      div(
+        button("Update").onClick(_ => updateGroupName()),
+        button("Cancel").onClick(_ => showForm := false)
+      )
+    ).show(showForm)
+
+    private def updateGroupName(): Unit = {
+      DataStore.updateLinkGroup(linkGroup.copy(name = newGroupName.get))
+    }
   }
 
 }
