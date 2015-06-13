@@ -47,40 +47,34 @@ case class EditPage() extends Page {
   private def sidebar() = div(DataStore.allCategories.map(categories =>
     ".categories" >>> div(
       categories.map { category =>
-        val showCategoryOps = Var(false)
         val showCategoryForm = Var(false)
         ".category" >>> div(
           div(
-            div(
-              ".category-name" >>> span(category.name),
-              ".category-ops" >>> span(
+            ".category-name" >>> div(
+              ".name" >>> span(category.name),
+              ".ops" >>> span(
                 button("edit").onClick(_ => showCategoryForm := true),
                 button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                   DataStore.deleteCategory(category)
                 })
-              ).show(showCategoryOps)
-            ).onMouseEnter(_ => showCategoryOps := true).onMouseLeave(_ => showCategoryOps := false)
-              .show(showCategoryForm.map(!_)),
+              )
+            ).show(showCategoryForm.map(!_)),
             ".category-form" >>> new CategoryForm(category).apply(showCategoryForm)
           ),
           ".projects" >>> div(
             category.projects.map(project => {
-              val showProjectOps = Var(false)
               val showProjectForm = Var(false)
               ".project" >>> div(
-                div(
-                  ".project-name" >>> span(project.name),
-                  ".project-ops" >>> span(
+                ".project-name" >>> div(
+                  ".name" >>> span(project.name),
+                  ".ops" >>> span(
                     button("edit").onClick(_ => showProjectForm := true),
                     button("delete").onClick { e =>
                       e.stopPropagation()
                       if (dom.confirm("Are you sure to delete?")) DataStore.deleteProject(project)
                     }
-                  ).show(showProjectOps)
-                ).onClick(_ => selectedProject := project)
-                  .show(showProjectForm.map(!_))
-                  .onMouseEnter(_ => showProjectOps := true)
-                  .onMouseLeave(_ => showProjectOps := false),
+                  )
+                ).onClick(_ => selectedProject := project).show(showProjectForm.map(!_)),
                 ".project-form" >>> new ProjectForm(project).apply(showProjectForm)
               )
             }
@@ -103,25 +97,22 @@ case class EditPage() extends Page {
             val showCreatingForm = Var(false)
             val showChangeLinkGroupNameForm = Var(false)
             val showMoveLinkGroupNameForm = Var(false)
-            val showLinkGroupOps = Var(false)
             ".link-group" >>> div(
               ".link-group-name" >>> div(
                 div(
-                  span(linkGroup.name),
-                  span(
+                  ".name" >>> span(linkGroup.name),
+                  ".ops" >>> span(
                     button("edit").onClick(_ => showChangeLinkGroupNameForm := true),
                     button("move").onClick(_ => showMoveLinkGroupNameForm := true)
-                  ).show(showLinkGroupOps)
-                ).onMouseEnter(_ => showLinkGroupOps := true).onMouseLeave(_ => showLinkGroupOps := false)
-                  .show(showChangeLinkGroupNameForm.map(!_)),
+                  )
+                ).show(showChangeLinkGroupNameForm.map(!_)),
                 new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm),
                 new MoveLinkGroupNameForm(project, linkGroup).apply(showMoveLinkGroupNameForm)
               ),
-              ".link-group-links" >>> div(
+              ".links" >>> div(
                 linkGroup.links.map { link =>
                   val showEditingForm = Var(false)
                   val showMovingForm = Var(false)
-                  val showOps = Var(false)
                   div(
                     ".link" >>> div(
                       span(
@@ -134,8 +125,8 @@ case class EditPage() extends Page {
                         button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                           DataStore.deleteLink(link)
                         })
-                      ).show(showOps)
-                    ).show(showEditingForm.map(!_)).onMouseEnter(_ => showOps := true).onMouseLeave(_ => showOps := false),
+                      )
+                    ).show(showEditingForm.map(!_)),
                     new LinkForm(linkGroup, Some(link)).apply(showEditingForm),
                     new MovingForm(linkGroup, link).apply(showMovingForm)
                   )

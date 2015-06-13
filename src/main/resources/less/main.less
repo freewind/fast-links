@@ -31,10 +31,14 @@ a {
         text-align: center;
         font-weight: bold;
         font-size: 18px;
+        .ops {
+          display: none
+        }
+        &:hover .ops {
+          display: inherit;
+        }
       }
-      .category-ops {
 
-      }
       .category-form {
 
       }
@@ -52,9 +56,12 @@ a {
           }
           .project-name {
             padding-right: 5px;
-          }
-          .project-ops {
-
+            .ops {
+              display: none;
+            }
+            &:hover .ops {
+              display: inherit;
+            }
           }
           .project-form {
 
@@ -213,4 +220,35 @@ a {
 }
 
 #edit-page {
+  .main-content {
+    .project-profile {
+      .project {
+        .project-name {
+
+        }
+        .link-groups {
+          .link-group {
+            .link-group-name {
+              .ops {
+                display: none;
+              }
+              &:hover .ops {
+                display: inherit;
+              }
+            }
+            .links {
+              .link {
+                .ops {
+                  display: none;
+                }
+                &:hover .ops {
+                  display: inherit;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
