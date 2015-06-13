@@ -4,6 +4,7 @@ import libs.{NodeWebkit, NodeJs}
 import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
+import org.widok.bindings.Bootstrap.Button
 import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
@@ -143,8 +144,8 @@ case class MainPage() extends Page {
 
   private def mainContent() = div(
     div(
-      "#menu-toggle.btn.btn-default" >>> button("Toggle Sidebar").onClick(_ => sidebarToggled.update(!_)),
-      button("Edit").onClick(_ => Entry.editPage().go())
+      "#menu-toggle" >>> Button("Toggle Sidebar").onClick(_ => sidebarToggled.update(!_)),
+      Button("Edit").onClick(_ => Entry.editPage().go())
     ),
     div(
       ".search-panel" >>> div(
