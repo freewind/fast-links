@@ -90,7 +90,11 @@ case class EditPage() extends Page {
   private def mainContent() = div(
     div(
       Button("Save changes").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
-      Button("Cancel editing").onClick { _ => DataStore.loadData(); Entry.mainPage().go() }
+      Button("Cancel editing").onClick { _ => DataStore.loadData(); Entry.mainPage().go() },
+      ".choose-data-file-panel" >>> span(
+        span(DataStore.config.map(_.map(_.dataFilePath).getOrElse[String]("No data file, please choose one first!"))),
+        Button("Choose data file").onClick(_ => Entry.chooseDataFilePage().go())
+      )
     ),
     ".project-profile" >>> div(selectedProject.map { project =>
       div(
