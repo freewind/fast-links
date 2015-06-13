@@ -14,7 +14,7 @@ case class MainPage() extends Page {
   val keyword = Var[String]("")
   val selected: Opt[Link] = Opt()
 
-  val showSidebar = Var(false)
+  val sidebarToggled = Var(true)
 
   //  val creatingLinkInGroup = Var[Option[LinkGroup]](None)
 
@@ -100,12 +100,24 @@ case class MainPage() extends Page {
   private def openLink(url: String) = NodeWebkit.gui.Shell.openExternal(url)
 
   override def view(): View = "#main-page" >>> div(
-    ".sidebar" >>> sidebar().show(showSidebar),
-    ".main-content" >>> mainContent().cssState(showSidebar.map(!_), "no-sidebar")
+    "#wrapper" >>> div(
+      "#sidebar-wrapper" >>> div(
+        ".sidebar" >>> sidebar()
+      ),
+      "#page-content-wrapper" >>> div(
+        ".container-fluid" >>> div(
+          ".row" >>> div(
+            ".col-lg-12" >>> div(
+              ".main-content" >>> mainContent()
+            )
+          )
+        )
+      )
+    ).cssState(sidebarToggled, "toggled")
   )
 
   document.keyDown.attach { event =>
-    if (toggleSidebarKey(event)) showSidebar := !showSidebar.get
+    if (toggleSidebarKey(event)) sidebarToggled := !sidebarToggled.get
   }
 
   private def toggleSidebarKey(event: dom.KeyboardEvent) = {
@@ -131,7 +143,7 @@ case class MainPage() extends Page {
 
   private def mainContent() = div(
     div(
-      "sidebar-toggle" >>> button("show sidebar").onClick(_ => showSidebar := !showSidebar.get),
+      "#menu-toggle.btn.btn-default" >>> button("Toggle Sidebar").onClick(_ => sidebarToggled.update(!_)),
       button("Edit").onClick(_ => Entry.editPage().go())
     ),
     div(
