@@ -62,6 +62,7 @@ case class EditPage() extends Page {
               ".link-group-links" >>> div(
                 linkGroup.links.map { link =>
                   val showEditingForm = Var(false)
+                  val showMovingForm = Var(false)
                   val showOps = Var(false)
                   div(
                     ".link" >>> div(
@@ -71,13 +72,15 @@ case class EditPage() extends Page {
                       ),
                       ".ops" >>> span(
                         button("edit").onClick(_ => showEditingForm := true),
+                        button("move").onClick(_ => showMovingForm := true),
                         button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                           DataStore.deleteLink(link)
                           updateSelectedProject()
                         })
                       ).show(showOps)
                     ).show(showEditingForm.map(!_)).onMouseEnter(_ => showOps := true).onMouseLeave(_ => showOps := false),
-                    new LinkForm(linkGroup, Some(link)).apply(showEditingForm)
+                    new LinkForm(linkGroup, Some(link)).apply(showEditingForm),
+                    new MovingForm(linkGroup, link).apply(showMovingForm)
                   )
                 }
               ),
@@ -102,17 +105,6 @@ case class EditPage() extends Page {
       DataStore.addOrUpdateLink(linkGroup, newLink)
     }
 
-    //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
-    //      Buffer(projects.flatMap(p => Left(p) +: p.linkGroups.map(g => Right(g))): _*)
-    //    }.get: _*)
-    //
-    //    def showLinkGroupOptions(projectOrLinkGroup: Either[Project, LinkGroup]) = projectOrLinkGroup match {
-    //      case Left(project) => option(project.name).enabled(false)
-    //      case Right(linkGroup) => option(" - " + linkGroup.name)
-    //    }
-    //    div(selectedLinkGroup.map(_.toString)),
-    //    select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
-
     def apply(showLinkForm: Var[Boolean]) = {
       ".link-form" >>> div(
         div("Link form"),
@@ -131,6 +123,38 @@ case class EditPage() extends Page {
         )
       ).show(showLinkForm)
     }
+  }
+
+  class MovingForm(initLinkGroup: LinkGroup, link: Link) {
+    val selectedLinkGroup = Var[Option[Either[Project, LinkGroup]]](Some(Right(initLinkGroup)))
+
+    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
+      Buffer(projects.flatMap(p => Left(p) +: p.linkGroups.map(g => Right(g))): _*)
+    }.get: _*)
+
+    def showLinkGroupOptions(projectOrLinkGroup: Either[Project, LinkGroup]) = projectOrLinkGroup match {
+      case Left(project) => option(project.name).enabled(false)
+      case Right(linkGroup) => option(" - " + linkGroup.name)
+    }
+
+    def moveLink(): Unit = {
+      selectedLinkGroup.get match {
+        case Some(Right(targetLinkGroup)) if initLinkGroup != targetLinkGroup => DataStore.moveLink(link, targetLinkGroup)
+        case _ =>
+      }
+    }
+
+    def apply(showForm: Var[Boolean]) = div(
+      select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
+      div(
+        button("cancel").onClick(_ => showForm := false),
+        button("move!").onClick { _ =>
+          moveLink()
+          updateSelectedProject()
+          showForm := false
+        }
+      )
+    ).show(showForm)
   }
 
   private def updateSelectedProject(): Unit = {

@@ -63,6 +63,11 @@ object DataStore {
 
   }
 
+  def moveLink(link: Link, targetLinkGroup: LinkGroup): Unit = {
+    deleteLink(link)
+    addOrUpdateLink(targetLinkGroup, link)
+  }
+
   def findProject(id: String): Option[Project] = {
     meta.get.flatMap(_.categories.flatMap(_.projects).find(_.id == id))
   }
