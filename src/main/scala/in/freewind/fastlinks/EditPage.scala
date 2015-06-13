@@ -1,17 +1,12 @@
 package in.freewind.fastlinks
 
-import libs.{NodeWebkit, NodeJs}
+import in.freewind.fastlinks.LayoutWithSelectors._
 import org.scalajs.dom
-import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
 import org.widok.bindings.Bootstrap
 import org.widok.bindings.Bootstrap._
-import org.widok.{WriteChannel, Channel, Buffer, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
-import upickle._
-import LayoutWithSelectors._
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import org.widok.{Buffer, InstantiatedRoute, Opt, Page, Var, View}
 
 case class EditPage() extends Page {
 
