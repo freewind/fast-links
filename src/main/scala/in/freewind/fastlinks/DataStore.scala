@@ -122,7 +122,18 @@ object DataStore {
   def deleteProject(deleting: Project): Unit = {
     meta := meta.get.map { mmm =>
       mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.filter(_ != deleting))
+        category.copy(projects = category.projects.filter(_.id != deleting.id))
+      })
+    }
+  }
+
+  def updateProject(project: Project): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map {
+          case p if p.id == project.id => project
+          case p => p
+        })
       })
     }
   }
@@ -133,9 +144,18 @@ object DataStore {
     }
   }
 
+  def updateCategory(category: Category): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map {
+        case c if c.id == category.id => category
+        case c => c
+      })
+    }
+  }
+
   def deleteCategory(deleting: Category): Unit = {
     meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.filter(_ != deleting))
+      mmm.copy(categories = mmm.categories.filter(_.id != deleting.id))
     }
   }
 

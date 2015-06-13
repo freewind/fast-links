@@ -48,30 +48,40 @@ case class EditPage() extends Page {
     ".categories" >>> div(
       categories.map { category =>
         val showCategoryOps = Var(false)
+        val showCategoryForm = Var(false)
         ".category" >>> div(
           ".category-name.sidebar-brand" >>> div(
-            a(category.name),
-            span(
-              button("edit"),
-              button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
-                DataStore.deleteCategory(category)
-              })
-            ).show(showCategoryOps)
-          ).onMouseEnter(_ => showCategoryOps := true).onMouseLeave(_ => showCategoryOps := false),
-          ul(
+            div(
+              a(category.name),
+              span(
+                button("edit").onClick(_ => showCategoryForm := true),
+                button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                  DataStore.deleteCategory(category)
+                })
+              ).show(showCategoryOps)
+            ).onMouseEnter(_ => showCategoryOps := true).onMouseLeave(_ => showCategoryOps := false)
+              .show(showCategoryForm.map(!_)),
+            new CategoryForm(category).apply(showCategoryForm)
+          ),
+          div(
             category.projects.map(project => {
               val showProjectOps = Var(false)
-              ".project" >>> li(
-                a(project.name),
-                span(
-                  button("edit"),
-                  button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
-                    DataStore.deleteProject(project)
-                  })
-                ).show(showProjectOps)
-              ).onClick(_ => selectedProject := project)
-                .onMouseEnter(_ => showProjectOps := true)
-                .onMouseLeave(_ => showProjectOps := false)
+              val showProjectForm = Var(false)
+              ".project" >>> div(
+                div(
+                  a(project.name),
+                  span(
+                    button("edit").onClick(_ => showProjectForm := true),
+                    button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                      DataStore.deleteProject(project)
+                    })
+                  ).show(showProjectOps)
+                ).onClick(_ => selectedProject := project)
+                  .show(showProjectForm.map(!_))
+                  .onMouseEnter(_ => showProjectOps := true)
+                  .onMouseLeave(_ => showProjectOps := false),
+                new ProjectForm(project).apply(showProjectForm)
+              )
             }
             ).toList: _*
           ),
@@ -238,5 +248,34 @@ case class EditPage() extends Page {
         case _ =>
       }
     }
+  }
+
+  class ProjectForm(project: Project) {
+    val projectName = Var(project.name)
+    def apply(showForm: Var[Boolean]) = div(
+      text().bind(projectName).onKeyDown { event =>
+        event.keyCode match {
+          case KeyCode.Enter =>
+            DataStore.updateProject(project.copy(name = projectName.get))
+            showForm := false
+          case KeyCode.Escape => showForm := false
+          case _ =>
+        }
+      }
+    ).show(showForm)
+  }
+  class CategoryForm(category: Category) {
+    val categoryName = Var(category.name)
+    def apply(showForm: Var[Boolean]) = div(
+      text().bind(categoryName).onKeyDown { event =>
+        event.keyCode match {
+          case KeyCode.Enter =>
+            DataStore.updateCategory(category.copy(name = categoryName.get))
+            showForm := false
+          case KeyCode.Escape => showForm := false
+          case _ =>
+        }
+      }
+    ).show(showForm)
   }
 }
