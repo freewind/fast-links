@@ -5,16 +5,40 @@ import org.widok.Var
 import upickle._
 import scala.concurrent.ExecutionContext.Implicits.global
 
+case class Config(dataFilePath: String)
+
 object DataStore {
 
-  val dataFilePath = "/Users/twer/workspace/fast-links/data.json"
+  val configFilePath = s"${NodeJs.userHome}/.fast-links/config.json"
 
   val meta = Var[Option[Meta]](None)
+  val config = Var[Option[Config]](None)
 
   val allCategories = meta.map(_.toSeq.flatMap(_.categories))
 
+  def changeDataFilePath(dataFilePath: String): Unit = {
+    config.update {
+      case Some(cfg) => Some(cfg.copy(dataFilePath = dataFilePath))
+      case _ => Some(Config(dataFilePath))
+    }
+    saveData()
+    loadData()
+  }
+
   def loadData(): Unit = {
-    meta := Some(sortProjects(upickle.read[Meta](NodeJs.readFile(dataFilePath))))
+    NodeJs.readFile(configFilePath) match {
+      case Some(configContent) =>
+        config := Some(upickle.read[Config](configContent))
+        config.attach {
+          case Some(cfg) =>
+            NodeJs.readFile(cfg.dataFilePath) match {
+              case Some(dataContent) => meta := Some(sortProjects(upickle.read[Meta](dataContent)))
+              case _ => meta := None
+            }
+          case _ => meta := None
+        }
+      case _ => meta := None
+    }
   }
 
   private def sortProjects(meta: Meta) = {
@@ -22,7 +46,10 @@ object DataStore {
   }
 
   def saveData(): Unit = {
-    meta.get.foreach(m => NodeJs.writeFile(dataFilePath, upickle.write[Meta](m)))
+    config.get.foreach { cfg =>
+      NodeJs.writeFile(configFilePath, upickle.write[Config](cfg))
+      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, upickle.write[Meta](m)))
+    }
   }
 
   def addOrUpdateLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {

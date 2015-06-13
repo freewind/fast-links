@@ -6,7 +6,7 @@ import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
 import org.widok.bindings.Bootstrap
 import org.widok.bindings.Bootstrap._
-import org.widok.{Channel, Buffer, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
+import org.widok.{WriteChannel, Channel, Buffer, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
 import LayoutWithSelectors._
@@ -25,7 +25,12 @@ case class EditPage() extends Page {
 
   override def ready(route: InstantiatedRoute): Unit = {
     DataStore.loadData()
-    DataStore.allCategories.toBuffer.get.flatten.flatMap(_.projects).headOption.foreach(selectedProject := _)
+    if (DataStore.meta.get.isEmpty) {
+      println("######## meta is empty")
+      Entry.chooseDataFilePage().go()
+    } else {
+      DataStore.allCategories.toBuffer.get.flatten.flatMap(_.projects).headOption.foreach(selectedProject := _)
+    }
   }
 
   override def view(): View = "#edit-page" >>> div(
@@ -37,7 +42,6 @@ case class EditPage() extends Page {
         ".container-fluid" >>> div(
           ".row" >>> div(
             ".col-lg-12" >>> div(
-              "#menu-toggle.btn.btn-default" >>> button("Toggle Menu").onClick(_ => toggled.update(!_)),
               ".main-content" >>> mainContent()
             )
           )
@@ -90,7 +94,12 @@ case class EditPage() extends Page {
   ))
 
   private def mainContent() = div(
-    okButton("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
+    div(
+      "#menu-toggle" >>> Button("Toggle Menu").onClick(_ => toggled.update(!_)),
+      Label(DataStore.config.get.map(_.dataFilePath).getOrElse[String]("Please choose data file first !")),
+      okButton("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
+      cancelButton.onClick { _ => DataStore.loadData(); Entry.mainPage().go() }
+    ),
     ".project-profile" >>> div(selectedProject.map { project =>
       div(
         ".project" >>> div(

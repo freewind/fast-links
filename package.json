@@ -2,6 +2,8 @@
   "name": "resi-links",
   "main": "app/index.html",
   "dependencies": {
-    "node-fs": "^0.1.7"
+    "mkdirp": "^0.5.1",
+    "node-fs": "^0.1.7",
+    "path": "^0.11.14"
   }
 }
