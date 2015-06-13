@@ -97,8 +97,8 @@ case class EditPage() extends Page {
     div(
       "#menu-toggle" >>> Button("Toggle Menu").onClick(_ => toggled.update(!_)),
       Label(DataStore.config.get.map(_.dataFilePath).getOrElse[String]("Please choose data file first !")),
-      okButton("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
-      cancelButton.onClick { _ => DataStore.loadData(); Entry.mainPage().go() }
+      Button("Save changes").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
+      Button("Cancel editing").onClick { _ => DataStore.loadData(); Entry.mainPage().go() }
     ),
     ".project-profile" >>> div(selectedProject.map { project =>
       div(
