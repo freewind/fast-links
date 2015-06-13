@@ -116,7 +116,7 @@ case class MainPage() extends Page {
     ".categories" >>> div(categories.map(category =>
       ".category" >>> div(
         ".category-name" >>> div(category.name),
-        ".project-list" >>> div(category.projects.map(p =>
+        ".projects" >>> div(category.projects.map(p =>
           ".project" >>> div(p.name).onClick(_ => scrollTo(p.id))
         ))
       )

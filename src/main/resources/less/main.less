@@ -8,67 +8,68 @@
 @linkColor: #666666;
 @hoverBgColor: #EDEDED;
 
-html, body {
-  width: @windowWidth;
-  max-height: @windowHeight;
-  padding: 0;
-  margin: 0;
-  overflow: scroll;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  padding: @bodyPadding;
-  overflow: auto;
-}
-
 a {
   word-wrap: break-word;
 }
 
-#main-page {
-  .sidebar {
-    width: @sidebarWidth;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    overflow-y: scroll;
-    background: rgb(247, 247, 247);
-    color: #555;
-    .category-name {
-      line-height: 48px;
-      border-bottom: 1px solid #AAAAAA;
-      background-color: #EEEEEE;
-      color: #777777;
-      text-align: center;
-      font-weight: bold;
-      font-size: 18px;
-    }
-    .project-list {
-      .project {
-        cursor: pointer;
-        padding: 0 @contentPadding;
-        line-height: 28px;
-        .project-name {
-          padding-right: 5px;
-        }
-        &:first-child {
-          margin-top: 5px;
-        }
-        &:hover {
-          color: @mainColor;
-        }
-      }
-      .current-project {
+.sidebar {
+  width: @sidebarWidth;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  background: rgb(247, 247, 247);
+  color: #555;
+  .categories {
+    .category {
+      .category-name {
+        line-height: 48px;
+        border-bottom: 1px solid #AAAAAA;
         background-color: #EEEEEE;
-        border-right: 5px solid @mainColor;
+        color: #777777;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .category-ops {
+
+      }
+      .category-form {
+
+      }
+      .projects {
+        padding-left: 10px;
+        .project {
+          cursor: pointer;
+          padding: 0 @contentPadding;
+          line-height: 28px;
+          &:first-child {
+            margin-top: 5px;
+          }
+          &:hover {
+            color: @mainColor;
+          }
+          .project-name {
+            padding-right: 5px;
+          }
+          .project-ops {
+
+          }
+          .project-form {
+
+          }
+        }
+        .current-project {
+          background-color: #EEEEEE;
+          border-right: 5px solid @mainColor;
+        }
       }
     }
   }
+}
+
+#main-page {
   .main-content {
     position: absolute;
     top: 0;
@@ -211,3 +212,5 @@ a {
   }
 }
 
+#edit-page {
+}
