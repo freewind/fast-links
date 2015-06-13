@@ -56,7 +56,7 @@ case class EditPage() extends Page {
         ".project" >>> div(
           ".project-name" >>> div(project.name),
           ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
-            val creatingLink = Var(false)
+            val showForm = Var(false)
 
             ".link-group" >>> div(
               ".link-group-name" >>> div(linkGroup.name),
@@ -69,8 +69,8 @@ case class EditPage() extends Page {
                 )
               ),
               Button(Glyphicon.Plus(), span(" Link")).size(Size.ExtraSmall)
-                .show(!creatingLink.get).onClick(_ => creatingLink.update(!_)),
-              new LinkForm().apply(linkGroup, creatingLink)
+                .onClick(_ => showForm.update(!_)).show(showForm.map(!_)),
+              new LinkForm().apply(linkGroup, showForm)
             )
           }))
         ),
@@ -83,30 +83,30 @@ case class EditPage() extends Page {
     val newLinkTitle = Var[String]("")
     val newLinkUrl = Var[String]("")
     val newLinkDescription = Var[String]("")
-    val selectedLinkGroup = Var[Option[Either[Project, LinkGroup]]](None)
+    val selectedLinkGroup = Opt[LinkGroup]()
 
     private def createLink(): Unit = {
       val newLink = new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
-      selectedLinkGroup.get match {
-        case Some(Right(linkGroup)) => DataStore.addLink(linkGroup, newLink)
+      selectedLinkGroup.toOption match {
+        case Some(linkGroup) => DataStore.addLink(linkGroup, newLink)
         case _ =>
       }
     }
 
-    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
-      Buffer(projects.flatMap(p => Left(p) +: p.linkGroups.map(g => Right(g))): _*)
-    }.get: _*)
-
-    def showLinkGroupOptions(projectOrLinkGroup: Either[Project, LinkGroup]) = projectOrLinkGroup match {
-      case Left(project) => option(project.name).enabled(false)
-      case Right(linkGroup) => option(" - " + linkGroup.name)
-    }
+    //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
+    //      Buffer(projects.flatMap(p => Left(p) +: p.linkGroups.map(g => Right(g))): _*)
+    //    }.get: _*)
+    //
+    //    def showLinkGroupOptions(projectOrLinkGroup: Either[Project, LinkGroup]) = projectOrLinkGroup match {
+    //      case Left(project) => option(project.name).enabled(false)
+    //      case Right(linkGroup) => option(" - " + linkGroup.name)
+    //    }
+    //    div(selectedLinkGroup.map(_.toString)),
+    //    select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
 
     def apply(linkGroup: LinkGroup, showLinkForm: Var[Boolean]) = {
-      selectedLinkGroup := Some(Right(linkGroup))
+      selectedLinkGroup := linkGroup
       ".link-form" >>> div(
-        div(selectedLinkGroup.map(_.toString)),
-        select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
         div("Link form"),
         div(
           div(text().bind(newLinkTitle).placeholder("Title")),
