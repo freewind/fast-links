@@ -63,6 +63,7 @@ case class EditPage() extends Page {
             val showCreatingForm = Var(false)
             val showChangeLinkGroupNameForm = Var(false)
             val showMoveLinkGroupNameForm = Var(false)
+            val showLinkGroupOps = Var(false)
             ".link-group" >>> div(
               ".link-group-name" >>> div(
                 div(
@@ -70,8 +71,9 @@ case class EditPage() extends Page {
                   span(
                     button("edit").onClick(_ => showChangeLinkGroupNameForm := true),
                     button("move").onClick(_ => showMoveLinkGroupNameForm := true)
-                  )
-                ).show(showChangeLinkGroupNameForm.map(!_)),
+                  ).show(showLinkGroupOps)
+                ).onMouseEnter(_ => showLinkGroupOps := true).onMouseLeave(_ => showLinkGroupOps := false)
+                  .show(showChangeLinkGroupNameForm.map(!_)),
                 new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm),
                 new MoveLinkGroupNameForm(project, linkGroup).apply(showMoveLinkGroupNameForm)
               ),
