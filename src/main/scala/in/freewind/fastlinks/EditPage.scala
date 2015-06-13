@@ -56,21 +56,30 @@ case class EditPage() extends Page {
         ".project" >>> div(
           ".project-name" >>> div(project.name),
           ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
-            val showForm = Var(false)
-
+            val showCreatingForm = Var(false)
             ".link-group" >>> div(
               ".link-group-name" >>> div(linkGroup.name),
               ".link-group-links" >>> div(
-                linkGroup.links.map(link =>
-                  ".link" >>> div(
-                    ".link-name" >>> span(link.name.getOrElse[String]("")),
-                    ".link-url" >>> a(link.url).url(link.url).attribute("target", "_blank")
+                linkGroup.links.map { link =>
+                  val showEditingForm = Var(false)
+                  div(
+                    ".link" >>> div(
+                      span(
+                        ".link-name" >>> span(link.name.getOrElse[String]("")),
+                        ".link-url" >>> a(link.url).url(link.url).attribute("target", "_blank")
+                      ),
+                      ".ops" >>> span(
+                        button("edit").onClick(_ => showEditingForm := true),
+                        button("delete").onClick(_ => DataStore.deleteLink(link))
+                      )
+                    ),
+                    new LinkForm(linkGroup, Some(link)).apply(showEditingForm)
                   )
-                )
+                }
               ),
               Button(Glyphicon.Plus(), span(" Link")).size(Size.ExtraSmall)
-                .onClick(_ => showForm.update(!_)).show(showForm.map(!_)),
-              new LinkForm().apply(linkGroup, showForm)
+                .onClick(_ => showCreatingForm.update(!_)).show(showCreatingForm.map(!_)),
+              new LinkForm(linkGroup, None).apply(showCreatingForm)
             )
           }))
         ),
@@ -79,18 +88,14 @@ case class EditPage() extends Page {
     ))
   )
 
-  class LinkForm {
-    val newLinkTitle = Var[String]("")
-    val newLinkUrl = Var[String]("")
-    val newLinkDescription = Var[String]("")
-    val selectedLinkGroup = Opt[LinkGroup]()
+  class LinkForm(linkGroup: LinkGroup, link: Option[Link]) {
+    val newLinkTitle = Var[String](link.flatMap(_.name).getOrElse(""))
+    val newLinkUrl = Var[String](link.map(_.url).getOrElse(""))
+    val newLinkDescription = Var[String](link.flatMap(_.description).getOrElse(""))
 
-    private def createLink(): Unit = {
-      val newLink = new Link(Utils.newId(), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
-      selectedLinkGroup.toOption match {
-        case Some(linkGroup) => DataStore.addLink(linkGroup, newLink)
-        case _ =>
-      }
+    private def createOrUpdateLink(): Unit = {
+      val newLink = new Link(link.map(_.id).getOrElse(Utils.newId()), name = Some(newLinkTitle.get), url = newLinkUrl.get, description = Some(newLinkDescription.get))
+      DataStore.addOrUpdateLink(linkGroup, newLink)
     }
 
     //    private def myOptions(): Buffer[Either[Project, LinkGroup]] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf { projects =>
@@ -104,8 +109,7 @@ case class EditPage() extends Page {
     //    div(selectedLinkGroup.map(_.toString)),
     //    select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
 
-    def apply(linkGroup: LinkGroup, showLinkForm: Var[Boolean]) = {
-      selectedLinkGroup := linkGroup
+    def apply(showLinkForm: Var[Boolean]) = {
       ".link-form" >>> div(
         div("Link form"),
         div(
@@ -114,9 +118,9 @@ case class EditPage() extends Page {
           div(text().bind(newLinkDescription).placeholder("description"))
         ),
         div(
-          button("Close").onClick(_ => showLinkForm := false),
+          button("Cancel").onClick(_ => showLinkForm := false),
           button("OK").onClick { _ =>
-            createLink()
+            createOrUpdateLink()
             updateSelectedProject()
             showLinkForm := false
           }

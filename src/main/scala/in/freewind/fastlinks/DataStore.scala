@@ -25,13 +25,20 @@ object DataStore {
     meta.get.foreach(m => NodeJs.writeFile(dataFilePath, upickle.write[Meta](m)))
   }
 
-  def addLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {
+  def addOrUpdateLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {
     meta := meta.get.map { mmm =>
       mmm.copy(categories = mmm.categories.map { category =>
         category.copy(projects = category.projects.map { project =>
           project.copy(linkGroups = project.linkGroups.map { linkGroup =>
             val links = if (linkGroup == selectedLinkGroup) {
-              linkGroup.links :+ link
+              if (linkGroup.links.exists(_.id == link.id)) {
+                linkGroup.links.map {
+                  case l if l.id == link.id => link
+                  case l => l
+                }
+              } else {
+                linkGroup.links :+ link
+              }
             } else {
               linkGroup.links
             }
@@ -40,6 +47,10 @@ object DataStore {
         })
       })
     }
+  }
+
+  def deleteLink(link: Link): Unit = {
+
   }
 
   def findProject(id: String): Option[Project] = {
