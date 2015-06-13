@@ -72,9 +72,10 @@ case class EditPage() extends Page {
                   ".project-name" >>> span(project.name),
                   ".project-ops" >>> span(
                     button("edit").onClick(_ => showProjectForm := true),
-                    button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
-                      DataStore.deleteProject(project)
-                    })
+                    button("delete").onClick { e =>
+                      e.stopPropagation()
+                      if (dom.confirm("Are you sure to delete?")) DataStore.deleteProject(project)
+                    }
                   ).show(showProjectOps)
                 ).onClick(_ => selectedProject := project)
                   .show(showProjectForm.map(!_))
@@ -233,17 +234,17 @@ case class EditPage() extends Page {
   }
 
   class MoveLinkGroupNameForm(initProject: Project, linkGroup: LinkGroup) {
-    private val selectedProject = Var[Option[Project]](Some(initProject))
+    private val targetProject = Var[Option[Project]](Some(initProject))
     private def myOptions(): Buffer[Project] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf(Buffer(_: _*)).get: _*)
 
     def apply(showForm: Var[Boolean]) = div(
-      select().bind(myOptions(), (p: Project) => option(p.name), selectedProject),
+      select().bind(myOptions(), (p: Project) => option(p.name), targetProject),
       button("Move!").onClick(_ => moveLinkGroup()),
       button("Cancel").onClick(_ => showForm := false)
     ).show(showForm)
 
     private def moveLinkGroup(): Unit = {
-      selectedProject.get match {
+      targetProject.get match {
         case Some(project) if project != initProject => DataStore.moveLinkGroup(linkGroup, project)
         case _ =>
       }

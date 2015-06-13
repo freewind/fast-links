@@ -110,6 +110,10 @@ object DataStore {
     meta.get.flatMap(_.categories.flatMap(_.projects).find(_.id == id))
   }
 
+  def firstProject: Option[Project] = {
+    meta.get.flatMap(_.categories.flatMap(_.projects).headOption)
+  }
+
   def createNewProject(selectedCategory: Category, project: Project): Unit = {
     meta := meta.get.map { mmm =>
       mmm.copy(categories = mmm.categories.map {
