@@ -62,6 +62,7 @@ case class EditPage() extends Page {
               ".link-group-links" >>> div(
                 linkGroup.links.map { link =>
                   val showEditingForm = Var(false)
+                  val showOps = Var(false)
                   div(
                     ".link" >>> div(
                       span(
@@ -74,8 +75,8 @@ case class EditPage() extends Page {
                           DataStore.deleteLink(link)
                           updateSelectedProject()
                         })
-                      )
-                    ).show(showEditingForm.map(!_)),
+                      ).show(showOps)
+                    ).show(showEditingForm.map(!_)).onMouseEnter(_ => showOps := true).onMouseLeave(_ => showOps := false),
                     new LinkForm(linkGroup, Some(link)).apply(showEditingForm)
                   )
                 }
