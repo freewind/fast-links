@@ -91,6 +91,21 @@ object DataStore {
     }
   }
 
+  def moveLinkGroup(linkGroup: LinkGroup, targetProject: Project): Unit = {
+    deleteLinkGroup(linkGroup)
+    createNewLinkGroup(targetProject, linkGroup)
+  }
+
+  def deleteLinkGroup(linkGroup: LinkGroup): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map { project =>
+          project.copy(linkGroups = project.linkGroups.filter(_.id != linkGroup.id))
+        })
+      })
+    }
+  }
+
   def findProject(id: String): Option[Project] = {
     meta.get.flatMap(_.categories.flatMap(_.projects).find(_.id == id))
   }

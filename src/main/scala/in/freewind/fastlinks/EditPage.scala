@@ -62,10 +62,18 @@ case class EditPage() extends Page {
           ".link-groups" >>> div(project.linkGroups.map({ linkGroup =>
             val showCreatingForm = Var(false)
             val showChangeLinkGroupNameForm = Var(false)
+            val showMoveLinkGroupNameForm = Var(false)
             ".link-group" >>> div(
               ".link-group-name" >>> div(
-                div(linkGroup.name).onClick(_ => showChangeLinkGroupNameForm := true).show(showChangeLinkGroupNameForm.map(!_)),
-                new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm)
+                div(
+                  span(linkGroup.name),
+                  span(
+                    button("edit").onClick(_ => showChangeLinkGroupNameForm := true),
+                    button("move").onClick(_ => showMoveLinkGroupNameForm := true)
+                  )
+                ).show(showChangeLinkGroupNameForm.map(!_)),
+                new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm),
+                new MoveLinkGroupNameForm(project, linkGroup).apply(showMoveLinkGroupNameForm)
               ),
               ".link-group-links" >>> div(
                 linkGroup.links.map { link =>
@@ -183,4 +191,21 @@ case class EditPage() extends Page {
     }
   }
 
+  class MoveLinkGroupNameForm(initProject: Project, linkGroup: LinkGroup) {
+    private val selectedProject = Var[Option[Project]](Some(initProject))
+    private def myOptions(): Buffer[Project] = Buffer(DataStore.allCategories.map(cs => cs.flatMap(_.projects)).flatMapBuf(Buffer(_: _*)).get: _*)
+
+    def apply(showForm: Var[Boolean]) = div(
+      select().bind(myOptions(), (p: Project) => option(p.name), selectedProject),
+      button("Move!").onClick(_ => moveLinkGroup()),
+      button("Cancel").onClick(_ => showForm := false)
+    ).show(showForm)
+
+    private def moveLinkGroup(): Unit = {
+      selectedProject.get match {
+        case Some(project) if project != initProject => DataStore.moveLinkGroup(linkGroup, project)
+        case _ =>
+      }
+    }
+  }
 }
