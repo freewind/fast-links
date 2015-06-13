@@ -50,6 +50,16 @@ object DataStore {
   }
 
   def deleteLink(link: Link): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map { project =>
+          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
+            val links = linkGroup.links.filter(_.id != link.id)
+            linkGroup.copy(links = links)
+          })
+        })
+      })
+    }
 
   }
 

@@ -70,9 +70,12 @@ case class EditPage() extends Page {
                       ),
                       ".ops" >>> span(
                         button("edit").onClick(_ => showEditingForm := true),
-                        button("delete").onClick(_ => DataStore.deleteLink(link))
+                        button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                          DataStore.deleteLink(link)
+                          updateSelectedProject()
+                        })
                       )
-                    ),
+                    ).show(showEditingForm.map(!_)),
                     new LinkForm(linkGroup, Some(link)).apply(showEditingForm)
                   )
                 }
