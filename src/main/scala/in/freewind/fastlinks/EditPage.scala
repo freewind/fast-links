@@ -16,7 +16,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class EditPage() extends Page {
 
   val selectedProject = Opt[Project]()
-  val toggled = Var(false)
   val onDraggingLink = Var[Option[Link]](None)
 
   DataStore.meta.attach { _ =>
@@ -47,7 +46,7 @@ case class EditPage() extends Page {
           )
         )
       )
-    ).cssState(toggled, "toggled")
+    )
   )
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
@@ -95,8 +94,6 @@ case class EditPage() extends Page {
 
   private def mainContent() = div(
     div(
-      "#menu-toggle" >>> Button("Toggle Menu").onClick(_ => toggled.update(!_)),
-      Label(DataStore.config.get.map(_.dataFilePath).getOrElse[String]("Please choose data file first !")),
       Button("Save changes").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
       Button("Cancel editing").onClick { _ => DataStore.loadData(); Entry.mainPage().go() }
     ),
