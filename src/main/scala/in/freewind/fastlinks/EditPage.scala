@@ -17,6 +17,10 @@ case class EditPage() extends Page {
   val selectedProject = Opt[Project]()
   val showSidebar = Var(true)
 
+  DataStore.meta.attach { _ =>
+    selectedProject.update(p => DataStore.findProject(p.id).getOrElse(p))
+  }
+
   override def ready(route: InstantiatedRoute): Unit = {
     DataStore.loadData()
   }
@@ -51,7 +55,7 @@ case class EditPage() extends Page {
 
   private def mainContent() = div(
     Button(Glyphicon.Ok()).size(Size.ExtraSmall).title("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
-    ".project-profile" >>> div(selectedProject.map(project =>
+    ".project-profile" >>> div(selectedProject.map { project =>
       div(
         ".project" >>> div(
           ".project-name" >>> div(project.name),
@@ -75,7 +79,6 @@ case class EditPage() extends Page {
                         button("move").onClick(_ => showMovingForm := true),
                         button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                           DataStore.deleteLink(link)
-                          updateSelectedProject()
                         })
                       ).show(showOps)
                     ).show(showEditingForm.map(!_)).onMouseEnter(_ => showOps := true).onMouseLeave(_ => showOps := false),
@@ -88,12 +91,18 @@ case class EditPage() extends Page {
                 .onClick(_ => showCreatingForm.update(!_)).show(showCreatingForm.map(!_)),
               new LinkForm(linkGroup, None).apply(showCreatingForm)
             )
-          }))
+          })),
+          button("new Link Group").onClick(_ => createNewLinkGroup(project))
         ),
         ".project-separator" >>> div()
       )
-    ))
+    })
   )
+
+  private def createNewLinkGroup(project: Project): Unit = {
+    val linkGroup = new LinkGroup(Utils.newId(), "< click to edit >", Nil)
+    DataStore.createNewLinkGroup(project, linkGroup)
+  }
 
   class LinkForm(linkGroup: LinkGroup, link: Option[Link]) {
     val newLinkTitle = Var[String](link.flatMap(_.name).getOrElse(""))
@@ -117,7 +126,6 @@ case class EditPage() extends Page {
           button("Cancel").onClick(_ => showLinkForm := false),
           button("OK").onClick { _ =>
             createOrUpdateLink()
-            updateSelectedProject()
             showLinkForm := false
           }
         )
@@ -150,15 +158,10 @@ case class EditPage() extends Page {
         button("cancel").onClick(_ => showForm := false),
         button("move!").onClick { _ =>
           moveLink()
-          updateSelectedProject()
           showForm := false
         }
       )
     ).show(showForm)
-  }
-
-  private def updateSelectedProject(): Unit = {
-    selectedProject.update(p => DataStore.findProject(p.id).getOrElse(p))
   }
 
 }

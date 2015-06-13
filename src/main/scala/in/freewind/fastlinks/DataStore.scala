@@ -60,12 +60,22 @@ object DataStore {
         })
       })
     }
-
   }
 
   def moveLink(link: Link, targetLinkGroup: LinkGroup): Unit = {
     deleteLink(link)
     addOrUpdateLink(targetLinkGroup, link)
+  }
+
+  def createNewLinkGroup(selectedProject: Project, linkGroup: LinkGroup): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map {
+          case project if project.id == selectedProject.id => project.copy(linkGroups = project.linkGroups :+ linkGroup)
+          case p => p
+        })
+      })
+    }
   }
 
   def findProject(id: String): Option[Project] = {
