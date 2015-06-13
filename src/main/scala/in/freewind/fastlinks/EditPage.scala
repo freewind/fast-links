@@ -17,6 +17,7 @@ case class EditPage() extends Page {
 
   val selectedProject = Opt[Project]()
   val toggled = Var(false)
+  val onDraggingLink = Var[Option[Link]](None)
 
   DataStore.meta.attach { _ =>
     selectedProject.update(p => DataStore.findProject(p.id).getOrElse(p))
@@ -118,6 +119,7 @@ case class EditPage() extends Page {
                   val showEditingForm = Var(false)
                   val showMovingForm = Var(false)
                   div(
+                    dropPlaceholder(linkGroup, Some(link)),
                     ".link" >>> div(
                       span(
                         ".link-name" >>> span(link.name.getOrElse[String]("")),
@@ -130,11 +132,15 @@ case class EditPage() extends Page {
                           DataStore.deleteLink(link)
                         })
                       )
-                    ).show(showEditingForm.map(!_)),
+                    ).show(showEditingForm.map(!_))
+                      .attribute("draggable", "true")
+                      .cssState(onDraggingLink.is(Some(link)), "dragging")
+                      .onDragStart(_ => onDraggingLink := Some(link))
+                      .onDragEnd(_ => onDraggingLink := None),
                     new LinkForm(linkGroup, Some(link)).apply(showEditingForm),
                     new MovingForm(linkGroup, link).apply(showMovingForm)
                   )
-                }
+                } :+ dropPlaceholder(linkGroup, None)
               ),
               addButton("Link").onClick(_ => showCreatingForm.update(!_)).show(showCreatingForm.map(!_)),
               new LinkForm(linkGroup, None).apply(showCreatingForm)
@@ -146,6 +152,27 @@ case class EditPage() extends Page {
       )
     })
   )
+
+  def dropPlaceholder(linkGroup: LinkGroup, link: Option[Link]) = {
+    val dragOver = Var(false)
+    div().css("drop-placeholder").cssState(dragOver, "drag-over").cssState(onDraggingLink.map(_.isDefined), "on-dragging")
+      .onDragEnter(_ => dragOver := true)
+      .onDragOver(e => e.preventDefault())
+      .onDragLeave(_ => dragOver := false)
+      .onDrop { e =>
+      e.preventDefault()
+      dragOver := false
+      (link, onDraggingLink.get) match {
+        case (Some(lnk), Some(onDragging)) if onDragging != lnk =>
+          DataStore.moveLinkBefore(onDragging, lnk)
+          onDraggingLink := None
+        case (None, Some(onDragging)) =>
+          DataStore.changeLinkParent(onDragging, linkGroup)
+          onDraggingLink := None
+        case _ =>
+      }
+    }
+  }
 
   def okButton(title: String): Button = {
     Button(Glyphicon.OkCircle()).css("btn-form").title(title)
@@ -218,7 +245,7 @@ case class EditPage() extends Page {
 
     def moveLink(): Unit = {
       selectedLinkGroup.get match {
-        case Some(Right(targetLinkGroup)) if initLinkGroup != targetLinkGroup => DataStore.moveLink(link, targetLinkGroup)
+        case Some(Right(targetLinkGroup)) if initLinkGroup != targetLinkGroup => DataStore.changeLinkParent(link, targetLinkGroup)
         case _ =>
       }
     }
@@ -262,7 +289,7 @@ case class EditPage() extends Page {
 
     private def moveLinkGroup(): Unit = {
       targetProject.get match {
-        case Some(project) if project != initProject => DataStore.moveLinkGroup(linkGroup, project)
+        case Some(project) if project != initProject => DataStore.changeLinkGroupParent(linkGroup, project)
         case _ =>
       }
     }

@@ -30,7 +30,7 @@ object DataStore {
       mmm.copy(categories = mmm.categories.map { category =>
         category.copy(projects = category.projects.map { project =>
           project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-            val links = if (linkGroup == selectedLinkGroup) {
+            val links = if (linkGroup.id == selectedLinkGroup.id) {
               if (linkGroup.links.exists(_.id == link.id)) {
                 linkGroup.links.map {
                   case l if l.id == link.id => link
@@ -62,7 +62,7 @@ object DataStore {
     }
   }
 
-  def moveLink(link: Link, targetLinkGroup: LinkGroup): Unit = {
+  def changeLinkParent(link: Link, targetLinkGroup: LinkGroup): Unit = {
     deleteLink(link)
     addOrUpdateLink(targetLinkGroup, link)
   }
@@ -91,7 +91,7 @@ object DataStore {
     }
   }
 
-  def moveLinkGroup(linkGroup: LinkGroup, targetProject: Project): Unit = {
+  def changeLinkGroupParent(linkGroup: LinkGroup, targetProject: Project): Unit = {
     deleteLinkGroup(linkGroup)
     createNewLinkGroup(targetProject, linkGroup)
   }
@@ -161,6 +161,23 @@ object DataStore {
     meta := meta.get.map { mmm =>
       mmm.copy(categories = mmm.categories.filter(_.id != deleting.id))
     }
+  }
+
+  def moveLinkBefore(source: Link, target: Link): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.map { project =>
+          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
+            linkGroup.copy(links = linkGroup.links.flatMap {
+              case link if link.id == source.id => None
+              case link if link.id == target.id => Seq(source, target)
+              case link => Some(link)
+            })
+          })
+        })
+      })
+    }
+
   }
 
 }

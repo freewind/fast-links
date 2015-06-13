@@ -8,6 +8,8 @@
 @linkColor: #666666;
 @hoverBgColor: #EDEDED;
 
+@import "_dragging.less";
+
 a {
   word-wrap: break-word;
 }
@@ -245,6 +247,7 @@ a {
               margin-left: 30px;
               margin-right: 30px;
               .link {
+                cursor: move;
                 line-height: 28px;
                 .link-name {
                   margin-right: 5px;

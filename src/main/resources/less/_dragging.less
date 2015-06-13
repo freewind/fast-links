@@ -1,0 +1,15 @@
+.dragging {
+  background-color: red;
+}
+
+.drop-placeholder {
+  height: 3px; /* at least be 3px, otherwise the drag is not working, strange */
+  &.on-dragging {
+    height: 8px;
+    background-color: yellow;
+  }
+}
+
+.drag-over {
+  height: 30px;
+}
