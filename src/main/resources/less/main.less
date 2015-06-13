@@ -228,22 +228,37 @@ a {
         }
         .link-groups {
           .link-group {
+            margin-top: 20px;
+            position: relative;
+            background: #f3f3f3;
+            border-radius: 6px;
+            padding: 10px 10px 20px;
             .link-group-name {
+              line-height: 30px;
+              font-size: 20px;
+              font-weight: bold;
               .ops {
-                display: none;
-              }
-              &:hover .ops {
-                display: initial;
+                padding: 0 10px;
               }
             }
             .links {
+              margin-left: 30px;
+              margin-right: 30px;
               .link {
+                line-height: 28px;
+                .link-name {
+                  margin-right: 5px;
+                  color: #666666;
+                }
+                .link-url {
+                  text-decoration: underline;
+                }
                 .ops {
-                  display: none;
+                  padding: 0 10px;
                 }
-                &:hover .ops {
-                  display: initial;
-                }
+              }
+              .link-form {
+                width: 300px;
               }
             }
           }
@@ -251,4 +266,20 @@ a {
       }
     }
   }
+}
+
+.btn-op {
+  padding: 1px 5px;
+  font-size: 10px;
+  color: #777777;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.btn-form {
+  padding: 3px 8px;
+  font-size: 12px;
+  color: #777777;
+  border-radius: 3px;
+  margin: 2px;
 }

@@ -4,6 +4,7 @@ import libs.{NodeWebkit, NodeJs}
 import org.scalajs.dom
 import org.scalajs.dom.KeyboardEvent
 import org.scalajs.dom.ext.KeyCode
+import org.widok.bindings.Bootstrap
 import org.widok.bindings.Bootstrap._
 import org.widok.{Channel, Buffer, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
@@ -53,8 +54,8 @@ case class EditPage() extends Page {
             ".category-name" >>> div(
               ".name" >>> span(category.name),
               ".ops" >>> span(
-                button("edit").onClick(_ => showCategoryForm := true),
-                button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                editButton.onClick(_ => showCategoryForm := true),
+                deleteButton.onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                   DataStore.deleteCategory(category)
                 })
               )
@@ -68,8 +69,8 @@ case class EditPage() extends Page {
                 ".project-name" >>> div(
                   ".name" >>> span(project.name),
                   ".ops" >>> span(
-                    button("edit").onClick(_ => showProjectForm := true),
-                    button("delete").onClick { e =>
+                    editButton.onClick(_ => showProjectForm := true),
+                    deleteButton.onClick { e =>
                       e.stopPropagation()
                       if (dom.confirm("Are you sure to delete?")) DataStore.deleteProject(project)
                     }
@@ -80,15 +81,15 @@ case class EditPage() extends Page {
             }
             ).toList: _*
           ),
-          button("+ project").onClick(_ => DataStore.createNewProject(category, Project(Utils.newId(), "< new project >")))
+          addButton("Project").onClick(_ => DataStore.createNewProject(category, Project(Utils.newId(), "< new project >")))
         )
       },
-      button("+ category").onClick(_ => DataStore.createCategory(Category(Utils.newId(), "< new category >")))
+      addButton("Category").onClick(_ => DataStore.createCategory(Category(Utils.newId(), "< new category >")))
     )
   ))
 
   private def mainContent() = div(
-    Button(Glyphicon.Ok()).size(Size.ExtraSmall).title("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
+    okButton("Done").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
     ".project-profile" >>> div(selectedProject.map { project =>
       div(
         ".project" >>> div(
@@ -102,8 +103,11 @@ case class EditPage() extends Page {
                 div(
                   ".name" >>> span(linkGroup.name),
                   ".ops" >>> span(
-                    button("edit").onClick(_ => showChangeLinkGroupNameForm := true),
-                    button("move").onClick(_ => showMoveLinkGroupNameForm := true)
+                    editButton.onClick(_ => showChangeLinkGroupNameForm := true),
+                    changeParentButton.onClick(_ => showMoveLinkGroupNameForm := true),
+                    deleteButton.onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                      DataStore.deleteLinkGroup(linkGroup)
+                    })
                   )
                 ).show(showChangeLinkGroupNameForm.map(!_)),
                 new ChangeLinkGroupNameForm(linkGroup).apply(showChangeLinkGroupNameForm),
@@ -120,9 +124,9 @@ case class EditPage() extends Page {
                         ".link-url" >>> a(link.url).url(link.url).attribute("target", "_blank")
                       ),
                       ".ops" >>> span(
-                        button("edit").onClick(_ => showEditingForm := true),
-                        button("move").onClick(_ => showMovingForm := true),
-                        button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                        editButton.onClick(_ => showEditingForm := true),
+                        changeParentButton.onClick(_ => showMovingForm := true),
+                        deleteButton.onClick(_ => if (dom.confirm("Are you sure to delete?")) {
                           DataStore.deleteLink(link)
                         })
                       )
@@ -132,17 +136,36 @@ case class EditPage() extends Page {
                   )
                 }
               ),
-              Button(Glyphicon.Plus(), span(" Link")).size(Size.ExtraSmall)
-                .onClick(_ => showCreatingForm.update(!_)).show(showCreatingForm.map(!_)),
+              addButton("Link").onClick(_ => showCreatingForm.update(!_)).show(showCreatingForm.map(!_)),
               new LinkForm(linkGroup, None).apply(showCreatingForm)
             )
           })),
-          button("new Link Group").onClick(_ => createNewLinkGroup(project))
+          addButton("Link Group").onClick(_ => createNewLinkGroup(project))
         ),
         ".project-separator" >>> div()
       )
     })
   )
+
+  def okButton(title: String): Button = {
+    Button(Glyphicon.OkCircle()).css("btn-form").title(title)
+  }
+  def cancelButton: Button = {
+    Button(Glyphicon.RemoveCircle()).css("btn-form").title("Cancel")
+  }
+  def addButton(text: String): Button = {
+    Button(Glyphicon.Plus(), span(" " + text)).css("btn-form")
+  }
+
+  def deleteButton: Button = {
+    Button(Glyphicon.Remove()).css("btn-op").title("delete")
+  }
+  def changeParentButton: Button = {
+    Button(Glyphicon.Random()).css("btn-op").title("change parent")
+  }
+  def editButton: Bootstrap.Button = {
+    Button(Glyphicon.Edit()).css("btn-op").title("edit")
+  }
 
   private def createNewLinkGroup(project: Project): Unit = {
     val linkGroup = new LinkGroup(Utils.newId(), "< click to edit >", Nil)
@@ -160,19 +183,22 @@ case class EditPage() extends Page {
     }
 
     def apply(showLinkForm: Var[Boolean]) = {
-      ".link-form" >>> div(
-        div("Link form"),
-        div(
-          div(text().bind(newLinkTitle).placeholder("Title")),
-          div(text().bind(newLinkUrl).placeholder("URL")),
-          div(text().bind(newLinkDescription).placeholder("description"))
+      ".link-form" >>> HorizontalForm(
+        FormGroup(
+          Input.Text().bind(newLinkTitle).placeholder("Title")
         ),
-        div(
-          button("Cancel").onClick(_ => showLinkForm := false),
-          button("OK").onClick { _ =>
+        FormGroup(
+          Input.Text().bind(newLinkUrl).placeholder("URL")
+        ),
+        FormGroup(
+          Input.Text().bind(newLinkDescription).placeholder("Description")
+        ),
+        FormGroup(
+          okButton("OK").onClick { _ =>
             createOrUpdateLink()
             showLinkForm := false
-          }
+          },
+          cancelButton.onClick(_ => showLinkForm := false)
         )
       ).show(showLinkForm)
     }
@@ -200,11 +226,11 @@ case class EditPage() extends Page {
     def apply(showForm: Var[Boolean]) = div(
       select().bind(myOptions(), showLinkGroupOptions, selectedLinkGroup),
       div(
-        button("cancel").onClick(_ => showForm := false),
-        button("move!").onClick { _ =>
+        okButton("OK").onClick { _ =>
           moveLink()
           showForm := false
-        }
+        },
+        cancelButton.onClick(_ => showForm := false)
       )
     ).show(showForm)
   }
@@ -214,8 +240,8 @@ case class EditPage() extends Page {
     def apply(showForm: Var[Boolean]) = div(
       div(text().bind(newGroupName)),
       div(
-        button("Update").onClick(_ => updateGroupName()),
-        button("Cancel").onClick(_ => showForm := false)
+        okButton("OK").onClick(_ => updateGroupName()),
+        cancelButton.onClick(_ => showForm := false)
       )
     ).show(showForm)
 
@@ -230,8 +256,8 @@ case class EditPage() extends Page {
 
     def apply(showForm: Var[Boolean]) = div(
       select().bind(myOptions(), (p: Project) => option(p.name), targetProject),
-      button("Move!").onClick(_ => moveLinkGroup()),
-      button("Cancel").onClick(_ => showForm := false)
+      okButton("OK").onClick(_ => moveLinkGroup()),
+      cancelButton.onClick(_ => showForm := false)
     ).show(showForm)
 
     private def moveLinkGroup(): Unit = {
