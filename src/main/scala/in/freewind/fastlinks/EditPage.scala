@@ -45,13 +45,41 @@ case class EditPage() extends Page {
   )
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
-    ".categories" >>> div(categories.map(category =>
-      ".category" >>> ul(
-        (".category-name.sidebar-brand" >>> li(a(category.name))) :: category.projects.map(p =>
-          ".project" >>> li(a(p.name)).onClick(_ => selectedProject := p)
-        ).toList: _*
-      )
-    ))
+    ".categories" >>> div(
+      categories.map { category =>
+        val showCategoryOps = Var(false)
+        ".category" >>> div(
+          ".category-name.sidebar-brand" >>> div(
+            a(category.name),
+            span(
+              button("edit"),
+              button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                DataStore.deleteCategory(category)
+              })
+            ).show(showCategoryOps)
+          ).onMouseEnter(_ => showCategoryOps := true).onMouseLeave(_ => showCategoryOps := false),
+          ul(
+            category.projects.map(project => {
+              val showProjectOps = Var(false)
+              ".project" >>> li(
+                a(project.name),
+                span(
+                  button("edit"),
+                  button("delete").onClick(_ => if (dom.confirm("Are you sure to delete?")) {
+                    DataStore.deleteProject(project)
+                  })
+                ).show(showProjectOps)
+              ).onClick(_ => selectedProject := project)
+                .onMouseEnter(_ => showProjectOps := true)
+                .onMouseLeave(_ => showProjectOps := false)
+            }
+            ).toList: _*
+          ),
+          button("+ project").onClick(_ => DataStore.createNewProject(category, Project(Utils.newId(), "< new project >")))
+        )
+      },
+      button("+ category").onClick(_ => DataStore.createCategory(Category(Utils.newId(), "< new category >")))
+    )
   ))
 
   private def mainContent() = div(

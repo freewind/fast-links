@@ -110,4 +110,33 @@ object DataStore {
     meta.get.flatMap(_.categories.flatMap(_.projects).find(_.id == id))
   }
 
+  def createNewProject(selectedCategory: Category, project: Project): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map {
+        case category if selectedCategory.id == category.id => category.copy(projects = category.projects :+ project)
+        case c => c
+      })
+    }
+  }
+
+  def deleteProject(deleting: Project): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.map { category =>
+        category.copy(projects = category.projects.filter(_ != deleting))
+      })
+    }
+  }
+
+  def createCategory(category: Category): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories :+ category)
+    }
+  }
+
+  def deleteCategory(deleting: Category): Unit = {
+    meta := meta.get.map { mmm =>
+      mmm.copy(categories = mmm.categories.filter(_ != deleting))
+    }
+  }
+
 }
