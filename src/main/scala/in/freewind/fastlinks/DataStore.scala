@@ -1,6 +1,6 @@
 package in.freewind.fastlinks
 
-import libs.NodeJs
+import libs.{JsBeautifier, NodeJs}
 import org.widok.Var
 import upickle._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,8 +47,8 @@ object DataStore {
 
   def saveData(): Unit = {
     config.get.foreach { cfg =>
-      NodeJs.writeFile(configFilePath, upickle.write[Config](cfg))
-      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, upickle.write[Meta](m)))
+      NodeJs.writeFile(configFilePath, JsBeautifier.js_beautify(upickle.write[Config](cfg)))
+      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, JsBeautifier.js_beautify(upickle.write[Meta](m))))
     }
   }
 
