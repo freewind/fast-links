@@ -2,5 +2,5 @@
 target/
 node_modules/
 /app/css/main.css
-/data.json
+/dist/
 .DS_Store
