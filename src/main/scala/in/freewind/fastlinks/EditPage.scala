@@ -87,9 +87,15 @@ case class EditPage() extends Page {
     )
   ))
 
+  val saveChangesButtonText = Var("Save changes")
+
   private def mainContent() = div(
     div(
-      Button("Save changes").onClick(_ => DataStore.saveData()),
+      Button(saveChangesButtonText).onClick { _ =>
+        saveChangesButtonText := "Saving ..."
+        DataStore.saveData()
+        dom.setTimeout(() => saveChangesButtonText := "Save changes", 1000)
+      },
       Button("Save changes & Return").onClick { _ => DataStore.saveData(); Entry.mainPage().go() },
       Button("Cancel editing").onClick { _ => DataStore.loadData(); Entry.mainPage().go() },
       ".choose-data-file-panel" >>> span(
@@ -227,13 +233,13 @@ case class EditPage() extends Page {
           Input.Text().bind(newLinkDescription).placeholder("Description")
         ),
         FormGroup(
-          okButton("OK").onClick { _ =>
-            createOrUpdateLink()
-            showLinkForm := false
-          },
+          okButton("OK"),
           cancelButton.onClick(_ => showLinkForm := false)
         )
-      ).show(showLinkForm)
+      ).show(showLinkForm).onSubmit { _ =>
+        createOrUpdateLink()
+        showLinkForm := false
+      }
     }
   }
 
