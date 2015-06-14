@@ -17,3 +17,8 @@ Skills
 ======
 
 1. Recommend tools like `Apptivate` to give a global keyshort to start it, make it faster
+
+Technique Stack
+================
+
+[Scala.js](http://www.scala-js.org/) + [widok](https://github.com/widok/widok) + [nodewebkit](https://github.com/nwjs/nw.js/)
