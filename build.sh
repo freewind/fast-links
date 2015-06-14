@@ -10,3 +10,5 @@ npm install
 mkdir -p ./dist/nwjs-v0.12.2-osx-x64/nwjs.app/Contents/Resources/app.nw/
 cp -Rf package.json ./app ./node_modules ./target ./dist/nwjs-v0.12.2-osx-x64/nwjs.app/Contents/Resources/app.nw/
 cp -Rf ./dist/nwjs-v0.12.2-osx-x64/nwjs.app ./dist/fast-links.app
+
+echo Successful!! Copy './dist/fast-links.app' to your application dir to use it
