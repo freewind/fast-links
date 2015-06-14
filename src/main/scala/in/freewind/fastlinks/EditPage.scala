@@ -201,7 +201,7 @@ case class EditPage() extends Page {
   }
 
   private def createNewLinkGroup(project: Project): Unit = {
-    val linkGroup = new LinkGroup(Utils.newId(), "< click to edit >", Nil)
+    val linkGroup = new LinkGroup(Utils.newId(), "< new link group >", Nil)
     DataStore.createNewLinkGroup(project, linkGroup)
   }
 
