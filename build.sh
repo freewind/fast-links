@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 
 mkdir -p dist
 wget -O dist/nwjs-v0.12.2-osx-x64.zip http://dl.nwjs.io/v0.12.2/nwjs-v0.12.2-osx-x64.zip
