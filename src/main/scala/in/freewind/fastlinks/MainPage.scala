@@ -13,6 +13,8 @@ import LayoutWithSelectors._
 
 case class MainPage() extends Page {
 
+  val projectUrl = "https://github.com/freewind/fast-links"
+
   val keyword = Var[String]("")
   val selected: Opt[Link] = Opt()
 
@@ -129,7 +131,9 @@ case class MainPage() extends Page {
           tr(
             td("Focus on Search"), td("cmd + s")
           )
-        )
+        ),
+        div("project: ", a(projectUrl).url(projectUrl).onClick(_ => openLink(projectUrl))),
+        div("local data file: ", span(DataStore.config.map(_.map(_.dataFilePath).getOrElse[String]("not chose"))))
       ).show(showHelp)
     ).cssState(sidebarToggled, "toggled")
   )
