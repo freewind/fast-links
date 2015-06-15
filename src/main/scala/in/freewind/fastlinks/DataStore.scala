@@ -3,7 +3,6 @@ package in.freewind.fastlinks
 import libs.{JsBeautifier, NodeJs}
 import org.widok.Var
 import upickle._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 case class Config(dataFilePath: String)
 

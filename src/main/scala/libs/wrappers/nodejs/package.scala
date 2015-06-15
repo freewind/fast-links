@@ -19,7 +19,7 @@ trait NodeFS extends js.Object {
 }
 
 trait Mkdirp extends js.Object {
-  def apply(path: String, callback: js.Function1[js.Any, Unit] = ???): Unit = js.native
+  def sync(path: String): Unit = js.native
 }
 
 trait Path extends js.Object {

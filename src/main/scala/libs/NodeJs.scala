@@ -2,10 +2,7 @@ package libs
 
 import libs.wrappers.nodejs
 
-import scala.concurrent.{Promise, Future}
 import scala.scalajs.js
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class JsException(message: String) extends RuntimeException(message)
 
@@ -20,22 +17,8 @@ object NodeJs {
   }
 
   def writeFile(file: String, content: String): Unit = {
-    mkdirp(nodejs.path.dirname(file)).foreach { _ =>
-      nodejs.fs.writeFileSync(file, content, js.Dynamic.literal("encoding" -> "UTF-8"))
-    }
-  }
-
-  def mkdirp(dir: String): Future[String] = {
-    val promise = Promise[String]()
-    nodejs.mkdirp.apply(dir, (error: js.Any) => {
-      if (error != null) {
-        promise.failure(new JsException("Can't make dir for: " + dir))
-      } else {
-        promise.success(dir)
-      }
-      ()
-    })
-    promise.future
+    nodejs.mkdirp.sync(nodejs.path.dirname(file))
+    nodejs.fs.writeFileSync(file, content, js.Dynamic.literal("encoding" -> "UTF-8"))
   }
 
   def userHome: String = {
