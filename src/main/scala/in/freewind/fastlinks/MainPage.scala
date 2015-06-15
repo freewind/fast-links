@@ -1,11 +1,12 @@
 package in.freewind.fastlinks
 
-import libs.{NodeWebkit, NodeJs}
+import libs.NodeWebkit
 import org.scalajs.dom
-import org.scalajs.dom.KeyboardEvent
+import org.scalajs.dom.{KeyboardEvent}
 import org.scalajs.dom.ext.KeyCode
+import org.scalajs.dom.raw.HTMLInputElement
 import org.widok.bindings.Bootstrap.Button
-import org.widok.{InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
+import org.widok.{DOM, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
 import LayoutWithSelectors._
@@ -181,7 +182,7 @@ case class MainPage() extends Page {
   )
 
   private def uiSearchInput() = {
-    ".search" >>> text()
+    "#search-input.search" >>> text()
       .bind(keyword)
       // Note: must be `onKeyUp` rather than `onKeyPress/onKeyDown`
       .onKeyUp(e => moveSelection(e))
@@ -270,6 +271,12 @@ object Matches {
       None
     }
   }
+
+  NodeWebkit.gui.Window.get().on("focus", () => {
+    DOM.getElement("search-input").foreach(text =>
+      text.asInstanceOf[HTMLInputElement].focus()
+    )
+  })
 
 }
 

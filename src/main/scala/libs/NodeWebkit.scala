@@ -8,6 +8,15 @@ object NodeWebkit {
 
 trait Gui extends js.Object {
   val Shell: Shell = js.native
+  val Window: WindowFactory = js.native
+}
+
+trait WindowFactory extends js.Object {
+  def get(): Window = js.native
+}
+
+trait Window extends js.Object {
+  def on(event: String, callback: js.Function0[Unit] = ???): Unit = js.native
 }
 
 trait Shell extends js.Object {
