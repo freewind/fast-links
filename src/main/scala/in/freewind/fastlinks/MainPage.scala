@@ -5,7 +5,7 @@ import org.scalajs.dom
 import org.scalajs.dom.{KeyboardEvent}
 import org.scalajs.dom.ext.KeyCode
 import org.scalajs.dom.raw.HTMLInputElement
-import org.widok.bindings.Bootstrap.Button
+import org.widok.bindings.Bootstrap.{Table, Button}
 import org.widok.{DOM, InstantiatedRoute, Page, ReadChannel, Opt, Var, View}
 import org.widok.html._
 import upickle._
@@ -17,12 +17,15 @@ case class MainPage() extends Page {
   val selected: Opt[Link] = Opt()
 
   val sidebarToggled = Var(true)
+  val showHelp = Var(false)
 
   //  val creatingLinkInGroup = Var[Option[LinkGroup]](None)
 
   keyword.combine(selected).attach { case (key, link) =>
     // saveSnapshot(key, link)
   }
+
+  NodeWebkit.gui.Window.get().on("focus", () => focusOnSearchInput())
 
   val tree: ReadChannel[Seq[Category]] = keyword.combine(DataStore.meta).distinct.map({ case (k, m) => (k.trim.toLowerCase, m.toSeq.flatMap(_.categories)) }).map {
     case (key, cs) if key.isEmpty => cs
@@ -114,16 +117,40 @@ case class MainPage() extends Page {
             )
           )
         )
-      )
+      ),
+      "#help" >>> div(
+        Table(
+          tr(
+            td("Show help"), td("cmd + /")
+          ),
+          tr(
+            td("Toggle sidebar"), td("cmd + 1")
+          ),
+          tr(
+            td("Focus on Search"), td("cmd + s")
+          )
+        )
+      ).show(showHelp)
     ).cssState(sidebarToggled, "toggled")
   )
 
   document.keyDown.attach { event =>
-    if (toggleSidebarKey(event)) sidebarToggled := !sidebarToggled.get
+    if (event.metaKey) {
+      event.keyCode match {
+        case KeyCode.Num1 => sidebarToggled.update(!_)
+        case 191 /* slash */ => showHelp.update(!_)
+        case KeyCode.S => focusOnSearchInput()
+        case _ => println("keycode: " + event.keyCode)
+      }
+    }
   }
 
   private def toggleSidebarKey(event: dom.KeyboardEvent) = {
     event.metaKey && event.keyCode == KeyCode.Num1
+  }
+
+  private def toggleHelpKey(event: dom.KeyboardEvent) = {
+    event.metaKey && event.keyCode == 191 // slash
   }
 
   private def sidebar() = div(DataStore.allCategories.map(categories =>
@@ -145,7 +172,7 @@ case class MainPage() extends Page {
 
   private def mainContent() = div(
     div(
-      "#menu-toggle" >>> Button("Toggle Sidebar").onClick(_ => sidebarToggled.update(!_)),
+      "#menu-toggle" >>> Button("Toggle Sidebar").title("cmd + 1").onClick(_ => sidebarToggled.update(!_)),
       Button("Edit").onClick(_ => Entry.editPage().go())
     ),
     div(
@@ -234,6 +261,12 @@ case class MainPage() extends Page {
     case MatchedString(c) => ".highlight-char" >>> span(c)
     case NonMatchString(c) => span(c)
   }
+
+  private def focusOnSearchInput(): Unit = {
+    DOM.getElement("search-input").foreach(text =>
+      text.asInstanceOf[HTMLInputElement].focus()
+    )
+  }
 }
 
 object Matches {
@@ -271,12 +304,6 @@ object Matches {
       None
     }
   }
-
-  NodeWebkit.gui.Window.get().on("focus", () => {
-    DOM.getElement("search-input").foreach(text =>
-      text.asInstanceOf[HTMLInputElement].focus()
-    )
-  })
 
 }
 
