@@ -187,15 +187,15 @@ case class EditPage() extends Page {
   }
 
   def okButton(title: String): Button = {
-    Button(Glyphicon.OkCircle()).css("btn-form").title(title)
+    Button(Glyphicon.OkCircle()).css("btn-form").title(title).attribute("type", "button")
   }
   def cancelButton: Button = {
-    Button(Glyphicon.RemoveCircle()).css("btn-form").title("Cancel")
+    Button(Glyphicon.RemoveCircle()).css("btn-form").title("Cancel").attribute("type", "button")
   }
+
   def addButton(text: String): Button = {
     Button(Glyphicon.Plus(), span(" " + text)).css("btn-form")
   }
-
   def deleteButton: Button = {
     Button(Glyphicon.Remove()).css("btn-op").title("delete")
   }
@@ -233,13 +233,13 @@ case class EditPage() extends Page {
           Input.Text().bind(newLinkDescription).placeholder("Description")
         ),
         FormGroup(
-          okButton("OK"),
+          okButton("OK").onClick { _ =>
+            createOrUpdateLink()
+            showLinkForm := false
+          },
           cancelButton.onClick(_ => showLinkForm := false)
         )
-      ).show(showLinkForm).onSubmit { _ =>
-        createOrUpdateLink()
-        showLinkForm := false
-      }
+      ).show(showLinkForm)
     }
   }
 
