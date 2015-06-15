@@ -12,6 +12,11 @@ object Entry extends Application {
   override def main() {
     val router = Router(routes, fallback = Some(mainPage))
     router.listen()
+
+    DataStore.loadData()
+    if (DataStore.meta.get.isEmpty) {
+      Entry.chooseDataFilePage().go()
+    }
   }
 
 }

@@ -217,10 +217,6 @@ case class MainPage() extends Page {
   }
 
   override def ready(route: InstantiatedRoute): Unit = {
-    DataStore.loadData()
-    if (DataStore.meta.get.isEmpty) {
-      Entry.chooseDataFilePage().go()
-    }
   }
 
   private def highlight(content: String, keyword: String) = {

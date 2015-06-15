@@ -18,13 +18,7 @@ case class EditPage() extends Page {
   }
 
   override def ready(route: InstantiatedRoute): Unit = {
-    DataStore.loadData()
-    if (DataStore.meta.get.isEmpty) {
-      println("######## meta is empty")
-      Entry.chooseDataFilePage().go()
-    } else {
-      DataStore.allCategories.toBuffer.get.flatten.flatMap(_.projects).headOption.foreach(selectedProject := _)
-    }
+    DataStore.allCategories.toBuffer.get.flatten.flatMap(_.projects).headOption.foreach(selectedProject := _)
   }
 
   override def view(): View = "#edit-page" >>> div(
