@@ -267,9 +267,11 @@ case class MainPage() extends Page {
   }
 
   private def focusOnSearchInput(): Unit = {
-    DOM.getElement("search-input").foreach(text =>
-      text.asInstanceOf[HTMLInputElement].focus()
-    )
+    DOM.getElement("search-input").foreach { text =>
+      val input = text.asInstanceOf[HTMLInputElement]
+      input.focus()
+      input.select()
+    }
   }
 }
 
