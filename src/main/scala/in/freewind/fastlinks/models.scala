@@ -16,3 +16,6 @@ case class LinkGroup(id: String, name: String, links: Seq[Link] = Nil)
 
 case class Link(id: String, name: Option[String] = None, url: String, description: Option[String] = None, showUrl: Boolean = true)
 
+case class Meta2(categories: Seq[Category2])
+
+case class Category2(id: String, name: String, projects: Seq[String] = Nil, description: Option[String] = None)

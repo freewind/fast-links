@@ -8,7 +8,7 @@ package object nodejs {
   val fs: NodeFS = js.Dynamic.global.require("fs").asInstanceOf[NodeFS]
   val mkdirp: Mkdirp = js.Dynamic.global.require("mkdirp").asInstanceOf[Mkdirp]
   val path: Path = js.Dynamic.global.require("path").asInstanceOf[Path]
-
+  val sanitizeFilename: SanitizeFilename = js.Dynamic.global.require("sanitize-filename").asInstanceOf[SanitizeFilename]
 }
 
 
@@ -16,6 +16,8 @@ trait NodeFS extends js.Object {
   def readFileSync(path: String, options: js.Any): String = js.native
   def writeFileSync(path: String, content: String, options: js.Any): Unit = js.native
   def existsSync(path: String): Boolean = js.native
+  def readdirSync(path: String): js.Array[String] = js.native
+  def unlinkSync(path: String): Unit = js.native
 }
 
 trait Mkdirp extends js.Object {
@@ -34,4 +36,8 @@ trait Process extends js.Object {
 trait Env extends js.Object {
   val USERPROFILE: String = js.native
   val HOME: String = js.native
+}
+
+trait SanitizeFilename extends js.Object {
+  def apply(str: String): String = js.native
 }

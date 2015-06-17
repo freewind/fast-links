@@ -1,8 +1,10 @@
 package in.freewind.fastlinks
 
-import libs.{JsBeautifier, NodeJs}
+import libs.wrappers.nodejs
+import libs.NodeJs
 import org.widok.Var
 import upickle._
+import scala.scalajs.js
 
 case class Config(dataFilePath: String)
 
@@ -45,10 +47,41 @@ object DataStore {
   }
 
   def saveData(): Unit = {
+    //    config.get.foreach { cfg =>
+    //      NodeJs.writeFile(configFilePath, JsBeautifier.js_beautify(upickle.write[Config](cfg)))
+    //      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, JsBeautifier.js_beautify(upickle.write[Meta](m))))
+    //    }
+    saveData2()
+  }
+
+  def saveData2(): Unit = {
     config.get.foreach { cfg =>
-      NodeJs.writeFile(configFilePath, JsBeautifier.js_beautify(upickle.write[Config](cfg)))
-      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, JsBeautifier.js_beautify(upickle.write[Meta](m))))
+      NodeJs.writeFile(configFilePath, prettyJson(upickle.write[Config](cfg)))
+      meta.get.foreach { m =>
+        val m2 = new Meta2(m.categories.map(c => new Category2(c.id, c.name, c.projects.map(getProjectFileName), c.description)))
+        val dirname = nodejs.path.dirname(cfg.dataFilePath)
+
+        NodeJs.writeFile(dirname + "/meta.json", prettyJson(upickle.write[Meta2](m2)))
+        m.categories.flatMap(_.projects).foreach { project =>
+          val targetProjectFile = dirname + s"/projects/${getProjectFileName(project)}"
+          println(targetProjectFile)
+          NodeJs.writeFile(targetProjectFile, prettyJson(upickle.write[Project](project)))
+        }
+
+        val invalidProjectFiles = nodejs.fs.readdirSync(dirname + "/projects").filterNot(m2.categories.flatMap(_.projects).contains)
+        invalidProjectFiles.map(filename => dirname + s"/projects/$filename").foreach(nodejs.fs.unlinkSync)
+      }
     }
+  }
+
+  private def prettyJson(jsonStr: String): String = {
+    val obj = js.JSON.parse(jsonStr)
+    js.JSON.stringify(obj.asInstanceOf[js.Any], null.asInstanceOf[js.Array[js.Any]], 4)
+  }
+
+  private def getProjectFileName(project: Project): String = {
+    val projectName = nodejs.sanitizeFilename(project.name).toLowerCase.replace(' ', '-')
+    s"$projectName.${project.id}.json"
   }
 
   def addOrUpdateLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {
