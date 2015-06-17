@@ -32,8 +32,11 @@ object DataStore {
         config := Some(upickle.read[Config](configContent))
         config.attach {
           case Some(cfg) =>
-            NodeJs.readFile(cfg.dataFilePath) match {
-              case Some(dataContent) => meta := Some(sortProjects(upickle.read[Meta](dataContent)))
+            val dirPath = dataDirPath(cfg)
+            NodeJs.readFile(dirPath + "/meta.json") match {
+              case Some(metaContent) =>
+                val m2 = upickle.read[Meta2](metaContent)
+                meta := Some(sortProjects(new Meta(m2.categories.map(c2 => new Category(c2.id, c2.name, c2.projects.map(dirPath + "/projects/" + _).flatMap(readProjectFile), c2.description)))))
               case _ => meta := None
             }
           case _ => meta := None
@@ -42,24 +45,23 @@ object DataStore {
     }
   }
 
+  private def readProjectFile(filepath: String): Option[Project] = {
+    NodeJs.readFile(filepath) match {
+      case Some(data) => Some(upickle.read[Project](data))
+      case _ => None
+    }
+  }
+
   private def sortProjects(meta: Meta) = {
     meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
   }
 
   def saveData(): Unit = {
-    //    config.get.foreach { cfg =>
-    //      NodeJs.writeFile(configFilePath, JsBeautifier.js_beautify(upickle.write[Config](cfg)))
-    //      meta.get.foreach(m => NodeJs.writeFile(cfg.dataFilePath, JsBeautifier.js_beautify(upickle.write[Meta](m))))
-    //    }
-    saveData2()
-  }
-
-  def saveData2(): Unit = {
     config.get.foreach { cfg =>
       NodeJs.writeFile(configFilePath, prettyJson(upickle.write[Config](cfg)))
       meta.get.foreach { m =>
         val m2 = new Meta2(m.categories.map(c => new Category2(c.id, c.name, c.projects.map(getProjectFileName), c.description)))
-        val dirname = nodejs.path.dirname(cfg.dataFilePath)
+        val dirname = dataDirPath(cfg)
 
         NodeJs.writeFile(dirname + "/meta.json", prettyJson(upickle.write[Meta2](m2)))
         m.categories.flatMap(_.projects).foreach { project =>
@@ -72,6 +74,10 @@ object DataStore {
         invalidProjectFiles.map(filename => dirname + s"/projects/$filename").foreach(nodejs.fs.unlinkSync)
       }
     }
+  }
+
+  def dataDirPath(cfg: Config): String = {
+    nodejs.path.dirname(cfg.dataFilePath)
   }
 
   private def prettyJson(jsonStr: String): String = {
