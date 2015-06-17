@@ -133,7 +133,7 @@ case class MainPage() extends Page {
           )
         ),
         div("project: ", a(projectUrl).url(projectUrl).onClick(_ => openLink(projectUrl))),
-        div("local data file: ", span(DataStore.config.map(_.map(_.dataFilePath).getOrElse[String]("not chose"))))
+        div("local data file: ", span(DataStore.config.map(_.map(_.dataDirPath).getOrElse[String]("not chose"))))
       ).show(showHelp)
     ).cssState(sidebarToggled, "toggled")
   )

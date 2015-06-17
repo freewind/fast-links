@@ -6,23 +6,23 @@ import org.widok.{InstantiatedRoute, Page, Var, View, WriteChannel}
 
 case class ChooseDataFilePage() extends Page {
 
-  val dataFilePath = Var("")
+  val dataDirPath = Var("")
 
   override def ready(route: InstantiatedRoute): Unit = {
     DataStore.loadData()
     DataStore.config.get match {
-      case Some(path) => dataFilePath := path.dataFilePath
+      case Some(path) => dataDirPath := path.dataDirPath
       case _ =>
     }
   }
 
   override def view(): View = div(
-    div(dataFilePath.map("Current data file: " + _)),
-    div("Choose the data file:"),
-    file().accept("application/json").bind(dataFilePath.asInstanceOf[WriteChannel[String]]),
-    dataFilePath.filterNot(_.isEmpty).map { path =>
+    div(dataDirPath.map("Current data dir: " + _)),
+    div("Choose the data dir (which might contains 'meta.json'):"),
+    file().attribute("webkitdirectory", "").bind(dataDirPath.asInstanceOf[WriteChannel[String]]),
+    dataDirPath.filterNot(_.isEmpty).map { path =>
       Button("Save & Return").onClick(_ => {
-        DataStore.changeDataFilePath(dataFilePath.get)
+        DataStore.changeDataFilePath(dataDirPath.get)
         Entry.mainPage().go()
       })
     }

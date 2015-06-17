@@ -6,7 +6,10 @@ import org.widok.Var
 import upickle._
 import scala.scalajs.js
 
-case class Config(dataFilePath: String)
+case class Config(dataDirPath: String) {
+  val metaFilePath = dataDirPath + "/meta.json"
+  val projectsDirPath = dataDirPath + "/projects"
+}
 
 object DataStore {
 
@@ -19,7 +22,7 @@ object DataStore {
 
   def changeDataFilePath(dataFilePath: String): Unit = {
     config.update {
-      case Some(cfg) => Some(cfg.copy(dataFilePath = dataFilePath))
+      case Some(cfg) => Some(cfg.copy(dataDirPath = dataFilePath))
       case _ => Some(Config(dataFilePath))
     }
     saveData()
@@ -32,11 +35,10 @@ object DataStore {
         config := Some(upickle.read[Config](configContent))
         config.attach {
           case Some(cfg) =>
-            val dirPath = dataDirPath(cfg)
-            NodeJs.readFile(dirPath + "/meta.json") match {
+            NodeJs.readFile(cfg.metaFilePath) match {
               case Some(metaContent) =>
                 val m2 = upickle.read[Meta2](metaContent)
-                meta := Some(sortProjects(new Meta(m2.categories.map(c2 => new Category(c2.id, c2.name, c2.projects.map(dirPath + "/projects/" + _).flatMap(readProjectFile), c2.description)))))
+                meta := Some(sortProjects(new Meta(m2.categories.map(c2 => new Category(c2.id, c2.name, c2.projects.map(cfg.projectsDirPath + "/" + _).flatMap(readProjectFile), c2.description)))))
               case _ => meta := None
             }
           case _ => meta := None
@@ -61,23 +63,17 @@ object DataStore {
       NodeJs.writeFile(configFilePath, prettyJson(upickle.write[Config](cfg)))
       meta.get.foreach { m =>
         val m2 = new Meta2(m.categories.map(c => new Category2(c.id, c.name, c.projects.map(getProjectFileName), c.description)))
-        val dirname = dataDirPath(cfg)
-
-        NodeJs.writeFile(dirname + "/meta.json", prettyJson(upickle.write[Meta2](m2)))
+        NodeJs.writeFile(cfg.metaFilePath, prettyJson(upickle.write[Meta2](m2)))
         m.categories.flatMap(_.projects).foreach { project =>
-          val targetProjectFile = dirname + s"/projects/${getProjectFileName(project)}"
+          val targetProjectFile = s"${cfg.projectsDirPath}/${getProjectFileName(project)}"
           println(targetProjectFile)
           NodeJs.writeFile(targetProjectFile, prettyJson(upickle.write[Project](project)))
         }
 
-        val invalidProjectFiles = nodejs.fs.readdirSync(dirname + "/projects").filterNot(m2.categories.flatMap(_.projects).contains)
-        invalidProjectFiles.map(filename => dirname + s"/projects/$filename").foreach(nodejs.fs.unlinkSync)
+        val invalidProjectFiles = nodejs.fs.readdirSync(cfg.projectsDirPath).filterNot(m2.categories.flatMap(_.projects).contains)
+        invalidProjectFiles.map(filename => s"${cfg.projectsDirPath}/$filename").foreach(nodejs.fs.unlinkSync)
       }
     }
-  }
-
-  def dataDirPath(cfg: Config): String = {
-    nodejs.path.dirname(cfg.dataFilePath)
   }
 
   private def prettyJson(jsonStr: String): String = {
