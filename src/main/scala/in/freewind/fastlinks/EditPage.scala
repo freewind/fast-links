@@ -18,6 +18,7 @@ case class EditPage() extends Page {
   }
 
   override def ready(route: InstantiatedRoute): Unit = {
+    DataStore.loadData()
     DataStore.allCategories.toBuffer.get.flatten.flatMap(_.projects).headOption.foreach(selectedProject := _)
   }
 
