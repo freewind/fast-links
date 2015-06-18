@@ -129,7 +129,7 @@ case class MainPage() extends Page {
             td("Toggle sidebar"), td("cmd + 1")
           ),
           tr(
-            td("Focus on Search"), td("cmd + s")
+            td("Focus on Search"), td("cmd + f")
           )
         ),
         div("project: ", a(projectUrl).url(projectUrl).onClick(_ => openLink(projectUrl))),
@@ -143,7 +143,7 @@ case class MainPage() extends Page {
       event.keyCode match {
         case KeyCode.Num1 => sidebarToggled.update(!_)
         case 191 /* slash */ => showHelp.update(!_)
-        case KeyCode.S => focusOnSearchInput()
+        case KeyCode.F => focusOnSearchInput()
         case _ => println("keycode: " + event.keyCode)
       }
     }
