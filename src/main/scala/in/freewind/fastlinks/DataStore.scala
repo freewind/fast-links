@@ -54,9 +54,9 @@ object DataStore {
     }
   }
 
-  private def sortProjects(meta: Meta) = {
-    meta.copy(categories = meta.categories.map(category => category.copy(projects = category.projects.sortBy(_.name))))
-  }
+  private def sortProjects(meta: Meta) = transform(meta)(transformCategory = {
+    case c => Seq(c.copy(projects = c.projects.sortBy(_.name)))
+  })
 
   def saveData(): Unit = {
     config.get.foreach { cfg =>
@@ -87,40 +87,17 @@ object DataStore {
   }
 
   def addOrUpdateLink(selectedLinkGroup: LinkGroup, link: Link): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-            val links = if (linkGroup.id == selectedLinkGroup.id) {
-              if (linkGroup.links.exists(_.id == link.id)) {
-                linkGroup.links.map {
-                  case l if l.id == link.id => link
-                  case l => l
-                }
-              } else {
-                linkGroup.links :+ link
-              }
-            } else {
-              linkGroup.links
-            }
-            linkGroup.copy(links = links)
-          })
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformLinkGroup = {
+      case g if g.id == selectedLinkGroup.id && !g.links.exists(_.id == link.id) => Seq(g.copy(links = g.links :+ link))
+    }, transformLink = {
+      case l if l.id == link.id => Seq(link)
+    }))
   }
 
   def deleteLink(link: Link): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-            val links = linkGroup.links.filter(_.id != link.id)
-            linkGroup.copy(links = links)
-          })
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformLink = {
+      case l if l.id == link.id => Nil
+    }))
   }
 
   def changeLinkParent(link: Link, targetLinkGroup: LinkGroup): Unit = {
@@ -129,27 +106,15 @@ object DataStore {
   }
 
   def createNewLinkGroup(selectedProject: Project, linkGroup: LinkGroup): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map {
-          case project if project.id == selectedProject.id => project.copy(linkGroups = project.linkGroups :+ linkGroup)
-          case p => p
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformProject = {
+      case p if p.id == selectedProject.id => Seq(p.copy(linkGroups = p.linkGroups :+ linkGroup))
+    }))
   }
 
   def updateLinkGroup(linkGroup: LinkGroup): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.map {
-            case g if g.id == linkGroup.id => linkGroup
-            case g => g
-          })
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformLinkGroup = {
+      case g if g.id == linkGroup.id => Seq(linkGroup)
+    }))
   }
 
   def changeLinkGroupParent(linkGroup: LinkGroup, targetProject: Project): Unit = {
@@ -158,13 +123,9 @@ object DataStore {
   }
 
   def deleteLinkGroup(linkGroup: LinkGroup): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.filter(_.id != linkGroup.id))
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformLinkGroup = {
+      case l if l.id == linkGroup.id => Nil
+    }))
   }
 
   def findProject(id: String): Option[Project] = {
@@ -176,69 +137,56 @@ object DataStore {
   }
 
   def createNewProject(selectedCategory: Category, project: Project): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map {
-        case category if selectedCategory.id == category.id => category.copy(projects = category.projects :+ project)
-        case c => c
-      })
-    }
+    meta := meta.get.map(transform(_)(transformCategory = {
+      case c if c.id == selectedCategory.id => Seq(c.copy(projects = c.projects :+ project))
+    }))
   }
 
   def deleteProject(deleting: Project): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.filter(_.id != deleting.id))
-      })
-    }
+    meta := meta.get.map(transform(_)(transformProject = {
+      case p if p.id == deleting.id => Nil
+    }))
   }
 
   def updateProject(project: Project): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map {
-          case p if p.id == project.id => project
-          case p => p
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformProject = {
+      case p if p.id == project.id => Seq(project)
+    }))
   }
 
   def createCategory(category: Category): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories :+ category)
+    meta := meta.get.map { m =>
+      m.copy(categories = m.categories :+ category)
     }
   }
 
-  def updateCategory(category: Category): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map {
-        case c if c.id == category.id => category
-        case c => c
-      })
-    }
+  def updateCategory(updating: Category): Unit = {
+    meta := meta.get.map(transform(_)(transformCategory = {
+      case c if c.id == updating.id => Seq(updating)
+    }))
   }
 
   def deleteCategory(deleting: Category): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.filter(_.id != deleting.id))
-    }
+    meta := meta.get.map(transform(_)(transformCategory = {
+      case c if c.id == deleting.id => Nil
+    }))
   }
 
   def moveLinkBefore(source: Link, target: Link): Unit = {
-    meta := meta.get.map { mmm =>
-      mmm.copy(categories = mmm.categories.map { category =>
-        category.copy(projects = category.projects.map { project =>
-          project.copy(linkGroups = project.linkGroups.map { linkGroup =>
-            linkGroup.copy(links = linkGroup.links.flatMap {
-              case link if link.id == source.id => None
-              case link if link.id == target.id => Seq(source, target)
-              case link => Some(link)
-            })
-          })
-        })
-      })
-    }
+    meta := meta.get.map(transform(_)(transformLink = {
+      case l if l.id == source.id => Nil
+      case l if l.id == target.id => Seq(source, target)
+    }))
+  }
 
+  private def transform(meta: Meta)(transformCategory: PartialFunction[Category, Seq[Category]] = {case c => Seq(c)},
+                                    transformProject: PartialFunction[Project, Seq[Project]] = {case p => Seq(p)},
+                                    transformLinkGroup: PartialFunction[LinkGroup, Seq[LinkGroup]] = {case g => Seq(g)},
+                                    transformLink: PartialFunction[Link, Seq[Link]] = {case l => Seq(l)}): Meta = {
+    meta.copy(categories = meta.categories.flatMap(transformCategory.orElse({ case c => Seq(c) })).map(c =>
+      c.copy(projects = c.projects.flatMap(transformProject.orElse({ case p => Seq(p) })).map(p =>
+        p.copy(linkGroups = p.linkGroups.flatMap(transformLinkGroup.orElse({ case g => Seq(g) })).map(g =>
+          g.copy(links = g.links.flatMap(transformLink.orElse({ case l => Seq(l) })))))))))
   }
 
 }
